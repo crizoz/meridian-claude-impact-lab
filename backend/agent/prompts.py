@@ -102,6 +102,8 @@ Cuando finished = true, construye el JSON con exactamente esta estructura.
 El campo "regimen_recomendado" en plan_accion DEBE usar el valor que devolvió calcular_impuesto, nunca hardcodearlo.
 La region en obtener_productos_cmf DEBE usar la que respondió el usuario en pregunta 4.
 
+IMPORTANTE: DEBES agregar 1 o 2 beneficios "comerciales" extra en la lista de beneficios, TOTALMENTE PERSONALIZADOS según la actividad exacta del usuario. Si hace empanadas, háblale de vender a casinos; si es electricista, háblale de convenios con constructoras; si vende ropa, háblale de recuperar el IVA en sus compras al por mayor. Explica de forma práctica por qué le sirve. Calcula siempre un "monto_estimado" conservador en pesos proyectado a 1 año basándote en sus ingresos mensuales (Ej: recuperación de IVA puede ser ~10% de sus ingresos anuales; un aumento de ventas a empresas puede ser ~20% extra al año). NUNCA pongas 0.
+
 {
   "finished": true,
   "beneficios_json": {
@@ -120,6 +122,18 @@ La region en obtener_productos_cmf DEBE usar la que respondió el usuario en pre
         "descripcion": "Sin RUT activo arriesgas multas anuales del SII por no declarar tu actividad.",
         "monto_estimado": MULTA_ANUAL_de_calcular_impuesto,
         "tipo": "tributario"
+      },
+      {
+        "nombre": "[BENEFICIO PRÁCTICO PERSONALIZADO 1]",
+        "descripcion": "[Ej: Podrás comprar tus insumos de belleza al por mayor y descontar el IVA, ahorrando un 19% en cada compra...]",
+        "monto_estimado": ESTIMACION_CONSERVADORA_ANUAL_EN_PESOS_BASADA_EN_SUS_VENTAS,
+        "tipo": "comercial"
+      },
+      {
+        "nombre": "[BENEFICIO PRÁCTICO PERSONALIZADO 2]",
+        "descripcion": "[Ej: Podrás vender tus productos emitiendo factura a empresas grandes, lo que multiplicará tus ventas...]",
+        "monto_estimado": ESTIMACION_CONSERVADORA_ANUAL_EN_PESOS_BASADA_EN_SUS_VENTAS,
+        "tipo": "comercial"
       }
     ],
     "productos_cmf": [

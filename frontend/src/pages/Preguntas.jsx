@@ -116,10 +116,18 @@ export default function Preguntas() {
       // El backend puede devolver finished:true directamente, o bien devolver
       // finished:false con el JSON completo en data.response (bug edge case).
       const isFinished = data.finished || (() => {
-        try { return !!JSON.parse(data.response ?? '')?.finished } catch { return false }
+        try {
+          const parsed = JSON.parse(data.response ?? '')
+          return !!parsed?.finished || !!parsed?.beneficios_json || !!parsed?.plan_accion || !!parsed?.productos_cmf || !!parsed?.beneficios
+        } catch { return false }
       })()
       const beneficiosRaw = data.beneficios_json
-        ?? (() => { try { return JSON.parse(data.response ?? '')?.beneficios_json } catch { return null } })()
+        ?? (() => {
+          try {
+            const parsed = JSON.parse(data.response ?? '')
+            return parsed?.beneficios_json ?? parsed
+          } catch { return null }
+        })()
 
       if (isFinished) {
         const beneficios = normalizarBeneficios(beneficiosRaw ?? {})

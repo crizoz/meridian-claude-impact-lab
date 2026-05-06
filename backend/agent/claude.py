@@ -28,22 +28,47 @@ def get_client() -> anthropic.Anthropic:
     return _client
 
 
-def _limpiar_texto(texto: str) -> str:
-    texto = texto.strip()
-    if texto.startswith('```'):
-        lines = texto.splitlines()
-        # sacar primera y ultima linea (``` o ```json)
-        inner = lines[1:-1] if lines[-1].strip() == '```' else lines[1:]
-        texto = '\n'.join(inner).strip()
-    return texto
-
-
 def _parsear_respuesta(texto: str) -> dict:
+    texto_limpio = texto.strip()
+    
+    start_dict = texto_limpio.find('{')
+    end_dict = texto_limpio.rfind('}')
+    start_list = texto_limpio.find('[')
+    end_list = texto_limpio.rfind(']')
+    
+    json_candidate = texto_limpio
+    
+    if start_dict != -1 and end_dict != -1 and end_dict > start_dict:
+        if start_list != -1 and start_list < start_dict and end_list > end_dict:
+            json_candidate = texto_limpio[start_list:end_list+1]
+        else:
+            json_candidate = texto_limpio[start_dict:end_dict+1]
+    elif start_list != -1 and end_list != -1 and end_list > start_list:
+        json_candidate = texto_limpio[start_list:end_list+1]
+        
     try:
-        data = json.loads(_limpiar_texto(texto))
-        if data.get('finished'):
-            beneficios = data.get('beneficios_json') or {}
+        data = json.loads(json_candidate)
+        
+        if isinstance(data, list):
+            return {
+                'finished': True, 
+                'beneficios_json': {
+                    'productos_cmf': data,
+                }
+            }
+            
+        if not isinstance(data, dict):
+            raise ValueError("Parsed JSON is not a dict or list")
+            
+        is_finished = data.get('finished') is True
+        has_final_keys = any(k in data for k in ['beneficios', 'plan_accion', 'productos_cmf', 'total_estimado', 'beneficios_json'])
+        
+        if is_finished or has_final_keys:
+            beneficios = data.get('beneficios_json')
+            if not isinstance(beneficios, dict):
+                beneficios = data
             return {'finished': True, 'beneficios_json': beneficios}
+            
         return {'finished': False, 'response': data.get('response') or texto}
     except Exception:
         return {'finished': False, 'response': texto}

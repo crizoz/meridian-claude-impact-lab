@@ -36,6 +36,14 @@ const CONFIG_TIPO = {
     badgeBg: 'rgba(52,211,153,0.10)',
     color: '#34D399',
   },
+  comercial: {
+    icono: '🤝',
+    label: 'Comercial',
+    bg: 'rgba(236,72,153,0.06)',
+    border: 'rgba(236,72,153,0.15)',
+    badgeBg: 'rgba(236,72,153,0.10)',
+    color: '#EC4899',
+  },
 }
 
 // Nombres de variante deben coincidir con los que usa el padre en Resultado.jsx
