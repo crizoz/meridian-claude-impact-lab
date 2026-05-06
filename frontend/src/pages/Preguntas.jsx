@@ -29,43 +29,33 @@ import PreguntasFlow from '../components/PreguntasFlow'
 //
 // Tipo BeneficiosJSON:
 //   {
-//     total_estimado: number,                  // suma de monto_estimado de todos los beneficios
-//     beneficios: {
-//       nombre: string,
-//       descripcion: string,
-//       monto_estimado: number,
-//       tipo: 'tributario' | 'financiero' | 'subsidio'
-//     }[],
-//     productos_cmf: {
-//       nombre: string,
-//       entidad: string,
-//       monto_maximo: number,
-//       tasa_estimada: string
-//     }[],
-//     plan_accion: {
-//       paso: number,
-//       descripcion: string,
-//       tiempo_estimado: string,
-//       urgencia: 'alta' | 'media' | 'baja'
-//     }[]
+//     total_estimado: number,
+//     beneficios: { nombre, descripcion, monto_estimado, tipo }[],
+//     productos_cmf: { nombre, entidad, monto_maximo, tasa_estimada }[],
+//     plan_accion: { paso, descripcion, tiempo_estimado, urgencia }[]
 //   }
 // ─────────────────────────────────────────────────────────────────────────────
 
-const TOTAL_PASOS_ESTIMADOS = 6   // Claude puede variar; esto es solo para la barra visual
+const TOTAL_PASOS_ESTIMADOS = 6
 
-// Preguntas que el mock envía como "respuesta de Claude" a cada paso del usuario.
-// Index 0 = respuesta tras la 1ª respuesta del usuario, index 1 tras la 2ª, etc.
+// Etiquetas de etapa para hacer el progreso más humano
+const ETIQUETAS_PASO = [
+  'Conociendo tu negocio',
+  'Tus ingresos',
+  'Tu ubicación',
+  'Tu equipo',
+  'Tu situación tributaria',
+  'Últimos detalles',
+]
+
 const FLUJO_PREGUNTAS_MOCK = [
   "Entendido. ¿Cuál es el ingreso mensual aproximado de tu negocio? [OPCIONES: Menos de $500.000 | $500.000 a $2.000.000 | $2.000.000 a $5.000.000 | Más de $5.000.000]",
   "¿En qué región de Chile opera tu negocio principalmente? [OPCIONES: Metropolitana | Valparaíso | Biobío | Otra región]",
   "¿Cuántas personas trabajan contigo en el negocio? [OPCIONES: Solo yo | 2 a 5 personas | Más de 5 personas]",
   "¿Actualmente tienes iniciación de actividades en el SII o solo operas con tu RUT personal? [OPCIONES: Solo RUT personal | Tengo iniciación de actividades | Tengo empresa formal (SpA o Ltda.)]",
   "Último dato. ¿Tienes cargas familiares o deudas financieras activas? [OPCIONES: Tengo cargas familiares | Tengo deudas activas | Ambas | Ninguna de las anteriores]",
-  // Después de FLUJO_PREGUNTAS_MOCK.length respuestas → mockRespuesta retorna finished=true
 ]
 
-// Datos de ejemplo para la página de resultados.
-// Reemplazar por la respuesta real del backend (misma estructura).
 const BENEFICIOS_MOCK = {
   total_estimado: 3240000,
   beneficios: [
@@ -95,18 +85,8 @@ const BENEFICIOS_MOCK = {
     },
   ],
   productos_cmf: [
-    {
-      nombre: 'Crédito Pyme Express',
-      entidad: 'Banco Estado',
-      monto_maximo: 20000000,
-      tasa_estimada: '0,5% mensual',
-    },
-    {
-      nombre: 'Capital de Trabajo Fogape',
-      entidad: 'Banco de Chile',
-      monto_maximo: 10000000,
-      tasa_estimada: '0,7% mensual',
-    },
+    { nombre: 'Crédito Pyme Express', entidad: 'Banco Estado', monto_maximo: 20000000, tasa_estimada: '0,5% mensual' },
+    { nombre: 'Capital de Trabajo Fogape', entidad: 'Banco de Chile', monto_maximo: 10000000, tasa_estimada: '0,7% mensual' },
   ],
   plan_accion: [
     { paso: 1, descripcion: 'Inicia actividades en el SII en línea (20 min, gratis)', tiempo_estimado: 'Esta semana', urgencia: 'alta' },
@@ -116,8 +96,6 @@ const BENEFICIOS_MOCK = {
   ],
 }
 
-// Simula la llamada a /api/chat con delay realista (600–1000 ms).
-// Recibe el array completo de messages (ya incluye el nuevo mensaje del usuario).
 function mockRespuesta(mensajes) {
   const pasoUsuario = mensajes.filter(m => m.role === 'user').length
   return new Promise(resolve => {
@@ -135,8 +113,6 @@ function mockRespuesta(mensajes) {
 // FIN MOCK BACKEND
 // ─────────────────────────────────────────────────────────────────────────────
 
-// Primer mensaje de Claude, personalizado según el punto de dolor de Entrada.jsx.
-// El marcador [OPCIONES: ...] hace que PreguntasFlow renderice botones.
 function mensajeInicial(dolor) {
   const intros = {
     credito_rechazado:
@@ -149,12 +125,68 @@ function mensajeInicial(dolor) {
   return intros[dolor] ?? intros.quiero_crecer
 }
 
+// ─── Paleta ───────────────────────────────────────────────────────────────────
+const C = {
+  bg:         '#0E0C09',
+  accent:     '#F5A623',
+  accentFaint:'rgba(245,166,35,0.55)',
+  text:       '#F8F3EB',
+  textFaint:  'rgba(248,243,235,0.28)',
+}
+
+// ─── Icono SVG de flecha atrás ────────────────────────────────────────────────
+function IconBack() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+      stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <polyline points="15 18 9 12 15 6" />
+    </svg>
+  )
+}
+
+// ─── Logo Meridian (inline, igual que Entrada.jsx) ────────────────────────────
+function MeridianLogo() {
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+      <div style={{
+        width: '30px',
+        height: '30px',
+        borderRadius: '9px',
+        background: 'linear-gradient(145deg, #F5A623 0%, #FBBF24 100%)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        boxShadow: '0 0 14px rgba(245,166,35,0.24)',
+        flexShrink: 0,
+      }}>
+        <span style={{
+          fontFamily: "'Syne', sans-serif",
+          fontSize: '13px',
+          fontWeight: 800,
+          color: '#0E0C09',
+          letterSpacing: '-0.04em',
+          lineHeight: 1,
+        }}>
+          M
+        </span>
+      </div>
+      <span style={{
+        fontFamily: "'Syne', sans-serif",
+        fontSize: '16px',
+        fontWeight: 700,
+        color: C.text,
+        letterSpacing: '-0.025em',
+      }}>
+        Meridian
+      </span>
+    </div>
+  )
+}
+
+// ─── Página de preguntas ──────────────────────────────────────────────────────
 export default function Preguntas() {
   const navigate = useNavigate()
 
-  // Restaura el historial de sessionStorage para sobrevivir recargas.
-  // Solo persiste cuando el último mensaje es del asistente (estado "limpio"),
-  // así una recarga durante el envío vuelve a la última pregunta de Claude.
   const [messages, setMessages] = useState(() => {
     const saved = sessionStorage.getItem('meridian_messages')
     return saved ? JSON.parse(saved) : []
@@ -177,9 +209,9 @@ export default function Preguntas() {
     }
   }, [messages])
 
-  // paso = número de respuestas del usuario enviadas hasta ahora
   const pasoActual = messages.filter(m => m.role === 'user').length
   const progreso = Math.min(pasoActual / TOTAL_PASOS_ESTIMADOS, 1)
+  const etiquetaPaso = ETIQUETAS_PASO[pasoActual] ?? 'Finalizando…'
 
   async function handleSend(respuesta) {
     const nuevosMensajes = [...messages, { role: 'user', content: respuesta }]
@@ -188,7 +220,6 @@ export default function Preguntas() {
 
     try {
       // ── MODO MOCK ─────────────────────────────────────────────────────────
-      // Borrar este bloque al conectar el backend real
       const data = await mockRespuesta(nuevosMensajes)
       // ── FIN MODO MOCK ─────────────────────────────────────────────────────
 
@@ -210,9 +241,7 @@ export default function Preguntas() {
         setMessages([...nuevosMensajes, { role: 'assistant', content: data.response }])
       }
     } catch (err) {
-      // TODO: reemplazar console.error por un toast o mensaje de error inline
       console.error('Error al procesar respuesta de Claude:', err)
-      // Retroceder al estado anterior para que el usuario pueda reintentar
       setMessages(messages)
     } finally {
       setIsLoading(false)
@@ -222,18 +251,21 @@ export default function Preguntas() {
   return (
     <div style={{
       height: '100dvh',
-      background: '#0F0E0C',
+      background: C.bg,
       display: 'flex',
       flexDirection: 'column',
       position: 'relative',
       overflow: 'hidden',
     }}>
 
-      {/* Fondo decorativo — igual que Entrada.jsx */}
+      {/* Fondos ambientales cálidos */}
       <div style={{
         position: 'absolute',
         inset: 0,
-        backgroundImage: 'radial-gradient(ellipse 80% 40% at 50% -5%, rgba(251,191,36,0.08) 0%, transparent 70%)',
+        background: [
+          'radial-gradient(ellipse 80% 50% at 10% -20%, rgba(245,130,15,0.14) 0%, transparent 58%)',
+          'radial-gradient(ellipse 60% 40% at 90% 105%, rgba(190,100,10,0.08) 0%, transparent 50%)',
+        ].join(', '),
         pointerEvents: 'none',
       }} />
 
@@ -248,28 +280,42 @@ export default function Preguntas() {
         position: 'relative',
       }}>
 
-        {/* Header: logo + barra de progreso */}
-        <div style={{ paddingTop: '24px', paddingBottom: '20px', flexShrink: 0 }}>
+        {/* Header: navegación + logo + progreso */}
+        <div style={{ paddingTop: '22px', paddingBottom: '18px', flexShrink: 0 }}>
 
-          {/* Logo — idéntico al de Entrada.jsx */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '20px' }}>
-            <div style={{
-              width: '28px', height: '28px', borderRadius: '8px',
-              background: '#FBBF24',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-            }}>
-              <div style={{ width: '10px', height: '10px', borderRadius: '50%', background: '#0F0E0C' }} />
-            </div>
-            <span style={{
-              fontFamily: "'Syne', sans-serif",
-              fontSize: '18px', fontWeight: 700,
-              color: '#F5F0E8', letterSpacing: '-0.02em',
-            }}>
-              Meridian
-            </span>
+          {/* Fila superior: botón volver + logo */}
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            marginBottom: '20px',
+          }}>
+            <button
+              onClick={() => navigate('/')}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '5px',
+                background: 'transparent',
+                border: 'none',
+                cursor: 'pointer',
+                color: C.textFaint,
+                fontFamily: "'DM Sans', sans-serif",
+                fontSize: '13px',
+                padding: '6px 0',
+                transition: 'color 0.2s',
+              }}
+              onMouseEnter={e => e.currentTarget.style.color = C.text}
+              onMouseLeave={e => e.currentTarget.style.color = C.textFaint}
+            >
+              <IconBack />
+              <span>Volver</span>
+            </button>
+
+            <MeridianLogo />
           </div>
 
-          {/* Barra de progreso */}
+          {/* Barra de progreso con etiqueta de etapa */}
           <div>
             <div style={{
               display: 'flex',
@@ -280,20 +326,22 @@ export default function Preguntas() {
               <span style={{
                 fontFamily: "'DM Sans', sans-serif",
                 fontSize: '12px',
-                color: 'rgba(245,240,232,0.35)',
-                textTransform: 'uppercase',
-                letterSpacing: '0.08em',
+                color: C.textFaint,
+                letterSpacing: '0.01em',
               }}>
-                Calculando tu perfil
+                {pasoActual > 0 ? etiquetaPaso : 'Comenzando tu perfil…'}
               </span>
               <span style={{
                 fontFamily: "'Syne', sans-serif",
-                fontSize: '12px', fontWeight: 700,
-                color: 'rgba(251,191,36,0.6)',
+                fontSize: '12px',
+                fontWeight: 700,
+                color: C.accentFaint,
               }}>
                 {pasoActual}/{TOTAL_PASOS_ESTIMADOS}
               </span>
             </div>
+
+            {/* Barra de progreso animada */}
             <div style={{
               height: '3px',
               background: 'rgba(255,255,255,0.06)',
@@ -302,12 +350,13 @@ export default function Preguntas() {
             }}>
               <motion.div
                 animate={{ width: `${progreso * 100}%` }}
-                transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+                transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
                 style={{
                   height: '100%',
-                  background: 'linear-gradient(to right, rgba(251,191,36,0.6), #FBBF24)',
+                  background: 'linear-gradient(to right, rgba(245,166,35,0.55), #F5A623)',
                   borderRadius: '100px',
-                  minWidth: progreso > 0 ? '8px' : '0px',
+                  minWidth: progreso > 0 ? '10px' : '0px',
+                  boxShadow: progreso > 0 ? '0 0 8px rgba(245,166,35,0.4)' : 'none',
                 }}
               />
             </div>

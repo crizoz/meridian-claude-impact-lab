@@ -2,7 +2,57 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Placeholder del input de texto libre en PreguntasFlow */
+/* ─── Rendering de fuentes ──────────────────────────────────────────────────── */
+* {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  box-sizing: border-box;
+}
+
+/* ─── Color de selección de texto ───────────────────────────────────────────── */
+::selection {
+  background: rgba(245, 166, 35, 0.28);
+  color: #F8F3EB;
+}
+
+/* ─── Placeholder del input de texto libre en PreguntasFlow ─────────────────── */
 .meridian-input::placeholder {
-  color: rgba(245, 240, 232, 0.25);
+  color: rgba(248, 243, 235, 0.25);
+}
+
+/* ─── Scrollbar del área de mensajes (webkit) ───────────────────────────────── */
+.meridian-messages::-webkit-scrollbar {
+  width: 4px;
+}
+.meridian-messages::-webkit-scrollbar-track {
+  background: transparent;
+}
+.meridian-messages::-webkit-scrollbar-thumb {
+  background: rgba(245, 166, 35, 0.15);
+  border-radius: 100px;
+}
+.meridian-messages::-webkit-scrollbar-thumb:hover {
+  background: rgba(245, 166, 35, 0.28);
+}
+
+/* ─── Scrollbar global mínima ────────────────────────────────────────────────── */
+::-webkit-scrollbar {
+  width: 4px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 100px;
+}
+
+/* ─── Reset de botones ───────────────────────────────────────────────────────── */
+button {
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* ─── Transiciones de página ─────────────────────────────────────────────────── */
+html {
+  scroll-behavior: smooth;
 }
