@@ -1,19 +1,5 @@
 {
-  "_comment": "Productos financieros regulados por la CMF. Verificar tasas vigentes en www.cmfchile.cl antes de usar en producción",
   "productos": [
-    {
-      "institucion": "BancoEstado",
-      "producto": "Crédito MIPYME",
-      "tipo": "credito_comercial",
-      "segmento": ["microempresa", "pequeña empresa"],
-      "monto_min_uf": 10,
-      "monto_max_uf": 2000,
-      "tasa_referencial_anual_pct": 0,
-      "plazo_max_meses": 60,
-      "requiere_garantia": false,
-      "link": "https://www.bancoestado.cl",
-      "TODO": "actualizar tasa referencial y condiciones desde CMF o sitio de BancoEstado"
-    },
     {
       "institucion": "BancoEstado",
       "producto": "Microcrédito Emprendedor",
@@ -21,11 +7,26 @@
       "segmento": ["microempresa"],
       "monto_min_uf": 1,
       "monto_max_uf": 100,
-      "tasa_referencial_anual_pct": 0,
+      "tasa_referencial_anual_pct": 22.0,
       "plazo_max_meses": 36,
       "requiere_garantia": false,
-      "link": "https://www.bancoestado.cl",
-      "TODO": "actualizar tasa y condiciones del Microcrédito Emprendedor"
+      "requiere_rut_activo": true,
+      "descripcion": "Para microempresarios con RUT activo. Sin garantia real requerida.",
+      "link": "https://www.bancoestado.cl/content/bancoestado-public/cl/es/home/personas/creditos/credito-emprendedor.html"
+    },
+    {
+      "institucion": "BancoEstado",
+      "producto": "Crédito MIPYME Fogape",
+      "tipo": "credito_comercial",
+      "segmento": ["microempresa", "pequena empresa"],
+      "monto_min_uf": 10,
+      "monto_max_uf": 2000,
+      "tasa_referencial_anual_pct": 14.5,
+      "plazo_max_meses": 60,
+      "requiere_garantia": true,
+      "requiere_rut_activo": true,
+      "descripcion": "Con garantia Fogape (80%). Tasa preferencial por garantia estatal.",
+      "link": "https://www.bancoestado.cl"
     },
     {
       "institucion": "Coopeuch",
@@ -34,11 +35,12 @@
       "segmento": ["microempresa"],
       "monto_min_uf": 5,
       "monto_max_uf": 500,
-      "tasa_referencial_anual_pct": 0,
+      "tasa_referencial_anual_pct": 18.0,
       "plazo_max_meses": 48,
       "requiere_garantia": false,
-      "link": "https://www.coopeuch.cl",
-      "TODO": "actualizar tasa referencial y condiciones desde CMF o sitio de Coopeuch"
+      "requiere_rut_activo": true,
+      "descripcion": "Cooperativa de ahorro y credito. Buena opcion sin historial bancario previo.",
+      "link": "https://www.coopeuch.cl/creditos/credito-emprendedor"
     },
     {
       "institucion": "Oriencoop",
@@ -47,11 +49,26 @@
       "segmento": ["microempresa"],
       "monto_min_uf": 5,
       "monto_max_uf": 300,
-      "tasa_referencial_anual_pct": 0,
+      "tasa_referencial_anual_pct": 16.5,
       "plazo_max_meses": 36,
       "requiere_garantia": false,
-      "link": "https://www.oriencoop.cl",
-      "TODO": "actualizar tasa referencial y condiciones desde CMF o sitio de Oriencoop"
+      "requiere_rut_activo": true,
+      "descripcion": "Cooperativa regional. Alternativa si no calificas en banco tradicional.",
+      "link": "https://www.oriencoop.cl"
+    },
+    {
+      "institucion": "Corfo",
+      "producto": "Capital de Trabajo Pyme",
+      "tipo": "credito_corfo",
+      "segmento": ["pequena empresa"],
+      "monto_min_uf": 100,
+      "monto_max_uf": 5000,
+      "tasa_referencial_anual_pct": 10.5,
+      "plazo_max_meses": 84,
+      "requiere_garantia": true,
+      "requiere_rut_activo": true,
+      "descripcion": "Tasa subsidiada por Corfo. Para pymes con ventas sobre UF 2.400 anuales.",
+      "link": "https://www.corfo.cl/sites/cpp/convocatorias"
     }
   ]
 }

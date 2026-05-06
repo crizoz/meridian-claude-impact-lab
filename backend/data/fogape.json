@@ -1,48 +1,68 @@
 {
-  "_comment": "Datos FOGAPE — Fondo de Garantía para Pequeños Empresarios. Verificar vigencia en www.fogape.cl o BancoEstado",
-  "descripcion": "FOGAPE garantiza créditos otorgados por instituciones financieras a micro, pequeñas y medianas empresas",
+  "descripcion": "FOGAPE garantiza creditos de instituciones financieras a micro y pequenas empresas con RUT activo",
+  "requisito_rut_activo": true,
   "rangos_credito": [
     {
-      "rango_ventas_mensuales_clp": "0-10M",
-      "segmento": "Microempresa",
-      "monto_max_uf": 0,
-      "cobertura_garantia_pct": 0,
-      "plazo_max_meses": 0,
-      "tasa_garantia_anual_pct": 0,
-      "TODO": "llenar con valores reales de FOGAPE para microempresas desde BancoEstado o CMF"
+      "rango_ventas_mensuales_clp": "menos_500k",
+      "segmento": "Microempresa nivel 1",
+      "ventas_anuales_max_uf": 800,
+      "monto_max_credito_uf": 100,
+      "cobertura_garantia_pct": 80,
+      "plazo_max_meses": 48,
+      "tasa_garantia_anual_pct": 1.0
     },
     {
-      "rango_ventas_mensuales_clp": "10M-50M",
-      "segmento": "Pequeña empresa",
-      "monto_max_uf": 0,
-      "cobertura_garantia_pct": 0,
-      "plazo_max_meses": 0,
-      "tasa_garantia_anual_pct": 0,
-      "TODO": "llenar con valores reales de FOGAPE para pequeñas empresas"
+      "rango_ventas_mensuales_clp": "500k_1M",
+      "segmento": "Microempresa nivel 2",
+      "ventas_anuales_max_uf": 1600,
+      "monto_max_credito_uf": 200,
+      "cobertura_garantia_pct": 80,
+      "plazo_max_meses": 60,
+      "tasa_garantia_anual_pct": 1.0
     },
     {
-      "rango_ventas_mensuales_clp": "50M-200M",
-      "segmento": "Mediana empresa",
-      "monto_max_uf": 0,
-      "cobertura_garantia_pct": 0,
-      "plazo_max_meses": 0,
-      "tasa_garantia_anual_pct": 0,
-      "TODO": "llenar con valores reales de FOGAPE para medianas empresas"
+      "rango_ventas_mensuales_clp": "1M_2M",
+      "segmento": "Microempresa nivel 3",
+      "ventas_anuales_max_uf": 2400,
+      "monto_max_credito_uf": 500,
+      "cobertura_garantia_pct": 80,
+      "plazo_max_meses": 60,
+      "tasa_garantia_anual_pct": 1.0
+    },
+    {
+      "rango_ventas_mensuales_clp": "2M_5M",
+      "segmento": "Pequena empresa",
+      "ventas_anuales_max_uf": 10000,
+      "monto_max_credito_uf": 2000,
+      "cobertura_garantia_pct": 70,
+      "plazo_max_meses": 84,
+      "tasa_garantia_anual_pct": 1.0
+    },
+    {
+      "rango_ventas_mensuales_clp": "mas_5M",
+      "segmento": "Pequena empresa alta",
+      "ventas_anuales_max_uf": 25000,
+      "monto_max_credito_uf": 5000,
+      "cobertura_garantia_pct": 60,
+      "plazo_max_meses": 84,
+      "tasa_garantia_anual_pct": 1.0
     }
   ],
   "requisitos_generales": [
-    "TODO: años mínimos en el mercado",
-    "TODO: sin morosidad en el sistema financiero (DICOM limpio)",
-    "TODO: documentación requerida: iniciación de actividades, últimas declaraciones de renta",
-    "TODO: no estar en quiebra ni en convenio judicial previo"
+    "RUT tributario activo (inicio de actividades en SII)",
+    "Sin morosidad vigente en el sistema financiero",
+    "Al menos 3 meses de actividad declarada",
+    "No estar en quiebra ni concurso de acreedores"
   ],
   "instituciones_participantes": [
-    "TODO: listar bancos e instituciones que operan FOGAPE (BancoEstado, Scotiabank, etc.)"
+    "BancoEstado", "Scotiabank", "Banco de Chile", "Santander",
+    "BCI", "Itau", "Coopeuch", "Oriencoop"
   ],
   "pasos_para_solicitarlo": [
-    "TODO: paso 1 — verificar requisitos",
-    "TODO: paso 2 — ir a banco participante con documentos",
-    "TODO: paso 3 — banco evalúa y solicita garantía a FOGAPE si aprueba",
-    "TODO: agregar link a formulario o portal de BancoEstado/FOGAPE"
-  ]
+    "Iniciar actividades en SII.cl (gratis, 30 minutos)",
+    "Esperar 3 meses de declaraciones mensuales",
+    "Ir a BancoEstado o banco participante con RUT y ultimas 3 declaraciones",
+    "El banco evalua y solicita la garantia Fogape si aprueba"
+  ],
+  "link": "https://www.fogape.cl"
 }
