@@ -1,53 +1,83 @@
-import anthropic
+import json
 import os
 
-# Cliente lazy-initialized para evitar error si ANTHROPIC_API_KEY no está al importar
+import anthropic
+
+from agent.prompts import SYSTEM_PROMPT_WEB, SYSTEM_PROMPT_WHATSAPP
+from agent.tools import calcular_impuesto, calcular_credito_fogape, obtener_productos_cmf
+
 _client: anthropic.Anthropic | None = None
+
+_SCHEMA_PATH = os.path.join(os.path.dirname(__file__), '..', 'data', 'tools_schema.json')
+with open(_SCHEMA_PATH, encoding='utf-8') as _f:
+    TOOLS_SCHEMA: list[dict] = json.load(_f)
+
+_TOOL_FN = {
+    'calcular_impuesto': calcular_impuesto,
+    'calcular_credito_fogape': calcular_credito_fogape,
+    'obtener_productos_cmf': obtener_productos_cmf,
+}
 
 
 def get_client() -> anthropic.Anthropic:
     global _client
     if _client is None:
-        _client = anthropic.Anthropic(api_key=os.getenv("ANTHROPIC_API_KEY"))
+        _client = anthropic.Anthropic(api_key=os.getenv('ANTHROPIC_API_KEY'))
     return _client
 
 
-def call_claude(messages: list[dict], mode: str = "web") -> str:
-    """
-    Llama a Claude con el historial de conversación.
+def _limpiar_texto(texto: str) -> str:
+    texto = texto.strip()
+    if texto.startswith('```'):
+        lines = texto.splitlines()
+        # sacar primera y ultima linea (``` o ```json)
+        inner = lines[1:-1] if lines[-1].strip() == '```' else lines[1:]
+        texto = '\n'.join(inner).strip()
+    return texto
 
-    Args:
-        messages: Lista de mensajes [{role: "user"|"assistant", content: str}]
-        mode: "web" para el flujo del frontend, "whatsapp" para Twilio
 
-    Returns:
-        Respuesta de Claude como string
+def _parsear_respuesta(texto: str) -> dict:
+    try:
+        data = json.loads(_limpiar_texto(texto))
+        if data.get('finished') is True:
+            return {'finished': True, 'beneficios_json': data['beneficios_json']}
+        return {'finished': False, 'response': data.get('response', texto)}
+    except json.JSONDecodeError:
+        return {'finished': False, 'response': texto}
 
-    TODO: seleccionar system prompt según mode (ver agent/prompts.py)
-    TODO: registrar tools de tool use: calcular_impuesto, calcular_credito_fogape, obtener_productos_cmf
-    TODO: manejar tool use loop: si Claude llama una tool, ejecutarla y continuar
-    TODO: cuando Claude termine el flujo, retornar JSON estructurado con beneficios
-    TODO: implementar streaming para el frontend (usar client.messages.stream)
-    """
-    # TODO: importar prompts según mode
-    # from agent.prompts import SYSTEM_PROMPT_WEB, SYSTEM_PROMPT_WHATSAPP
-    # system_prompt = SYSTEM_PROMPT_WEB if mode == "web" else SYSTEM_PROMPT_WHATSAPP
 
-    # TODO: definir tools para que Claude pueda calcular beneficios
-    # tools = [
-    #     {"name": "calcular_impuesto", ...},
-    #     {"name": "calcular_credito_fogape", ...},
-    #     {"name": "obtener_productos_cmf", ...},
-    # ]
+def call_claude(messages: list[dict], mode: str = 'web') -> dict:
+    system = SYSTEM_PROMPT_WEB if mode == 'web' else SYSTEM_PROMPT_WHATSAPP
+    history = list(messages)
 
-    # TODO: llamar a la API de Claude
-    # response = get_client().messages.create(
-    #     model="claude-opus-4-7",
-    #     max_tokens=2048,
-    #     system=system_prompt,
-    #     messages=messages,
-    #     tools=tools,
-    # )
-    # return response.content[0].text
+    for _ in range(10):
+        response = get_client().messages.create(
+            model='claude-sonnet-4-6',
+            max_tokens=2048,
+            system=system,
+            messages=history,
+            tools=TOOLS_SCHEMA,
+        )
 
-    return "TODO: implementar respuesta de Claude"
+        if response.stop_reason == 'tool_use':
+            tool_results = []
+            for block in response.content:
+                if block.type == 'tool_use':
+                    fn = _TOOL_FN.get(block.name)
+                    result = fn(**block.input) if fn else {'error': 'tool not found'}
+                    tool_results.append({
+                        'type': 'tool_result',
+                        'tool_use_id': block.id,
+                        'content': json.dumps(result, ensure_ascii=False),
+                    })
+            history.append({'role': 'assistant', 'content': response.content})
+            history.append({'role': 'user', 'content': tool_results})
+            continue
+
+        text = next((b.text for b in response.content if b.type == 'text'), '')
+        return _parsear_respuesta(text)
+
+    return {
+        'finished': False,
+        'response': 'Hubo un problema procesando tu información. Por favor intenta de nuevo.',
+    }

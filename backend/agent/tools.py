@@ -1,76 +1,77 @@
-# Herramientas (tools) que Claude puede invocar para calcular beneficios reales.
-# Cada función recibe parámetros del perfil del usuario y retorna datos estructurados.
-# Registrar estas funciones como tools en agent/claude.py con sus JSON schemas.
+import json
+import os
+
+_DATA_DIR = os.path.join(os.path.dirname(__file__), '..', 'data')
 
 
-def calcular_impuesto(rango_ingresos: str, regimen: str) -> dict:
-    """
-    Calcula el ahorro tributario potencial cambiando de régimen.
+def _load(filename: str) -> dict:
+    with open(os.path.join(_DATA_DIR, filename), encoding='utf-8') as f:
+        return json.load(f)
 
-    Args:
-        rango_ingresos: "0-25M" | "25M-75M" | "75M-200M" | "200M+"
-        regimen: "14D" | "14A" | "pro_pyme" | "desconocido"
 
-    Returns:
+def calcular_impuesto(rango_ingresos: str, tiene_rut: bool) -> dict:
+    data = _load('sii_tablas.json')
+    uf = data['uf_a_clp']
+
+    multa_anual = 0 if tiene_rut else data['multas_evasion']['rango_estimado_anual_por_rango_ingresos'].get(rango_ingresos, 280000)
+
+    rangos_a_uf = {
+        'menos_500k': 150,
+        '500k_1M': 300,
+        '1M_2M': 600,
+        '2M_5M': 1500,
+        'mas_5M': 4000,
+    }
+    ventas_uf_anuales = rangos_a_uf.get(rango_ingresos, 300)
+    regimen = 'RES' if ventas_uf_anuales <= 2400 else '14D'
+
+    tasa_ppm = data['regimenes'][regimen]['tasa_ppm_pct'] / 100
+    ventas_clp_mensuales = (ventas_uf_anuales * uf) / 12
+    impuesto_mensual = int(ventas_clp_mensuales * tasa_ppm)
+
+    return {
+        'regimen_recomendado': regimen,
+        'impuesto_mensual_estimado': impuesto_mensual,
+        'multa_anual': multa_anual,
+    }
+
+
+def calcular_credito_fogape(rango_ingresos: str, sector: str) -> dict:
+    data = _load('fogape.json')
+    uf = _load('sii_tablas.json')['uf_a_clp']
+
+    rango_data = next(
+        (r for r in data['rangos_credito'] if r['rango_ventas_mensuales_clp'] == rango_ingresos),
+        data['rangos_credito'][0],
+    )
+
+    monto_max_uf = rango_data['monto_max_credito_uf']
+    return {
+        'monto_max_pesos': monto_max_uf * uf,
+        'monto_max_uf': monto_max_uf,
+        'tasa_referencial': f"{rango_data['tasa_garantia_anual_pct']}%",
+        'plazo_max_meses': rango_data['plazo_max_meses'],
+        'institucion_recomendada': data['instituciones_participantes'][0],
+    }
+
+
+def obtener_productos_cmf(rango_ingresos: str, sector: str, region: str) -> list[dict]:
+    data = _load('cmf_productos.json')
+    uf = _load('sii_tablas.json')['uf_a_clp']
+
+    segmento = 'pequena empresa' if rango_ingresos in ('2M_5M', 'mas_5M') else 'microempresa'
+    productos = [p for p in data['productos'] if segmento in p['segmento']]
+    productos.sort(key=lambda p: p['tasa_referencial_anual_pct'])
+
+    return [
         {
-            tasa_ppm_actual: float,
-            regimen_optimo: str,
-            ahorro_anual_estimado_pesos: int,
-            descripcion: str
+            'institucion': p['institucion'],
+            'producto': p['producto'],
+            'monto_max_pesos': p['monto_max_uf'] * uf,
+            'monto_max_uf': p['monto_max_uf'],
+            'tasa': f"{p['tasa_referencial_anual_pct']}%",
+            'plazo_meses': p['plazo_max_meses'],
+            'link': p['link'],
         }
-
-    TODO: cargar datos desde backend/data/sii_tablas.json
-    TODO: calcular la diferencia entre el régimen actual y el régimen óptimo
-    TODO: si regimen == "desconocido", comparar los 3 regímenes y recomendar el mejor
-    TODO: retornar monto de ahorro anual estimado en pesos chilenos
-    """
-    pass
-
-
-def calcular_credito_fogape(rango_ingresos: str) -> dict:
-    """
-    Determina si el negocio califica para garantía FOGAPE y el monto máximo.
-
-    Args:
-        rango_ingresos: Rango de ventas mensuales del negocio
-
-    Returns:
-        {
-            califica: bool,
-            monto_max_uf: int,
-            cobertura_garantia_pct: int,
-            plazo_max_meses: int,
-            pasos_siguientes: list[str]
-        }
-
-    TODO: cargar datos desde backend/data/fogape.json
-    TODO: validar requisitos: ventas dentro del rango, más de 1 año en el mercado
-    TODO: si califica, retornar condiciones y los pasos para solicitarlo
-    TODO: si no califica, retornar alternativas (CORFO, BancoEstado microcrédito)
-    """
-    pass
-
-
-def obtener_productos_cmf(perfil: dict) -> list[dict]:
-    """
-    Filtra y retorna productos financieros regulados disponibles para el perfil.
-
-    Args:
-        perfil: {
-            sector: str,
-            rango_ingresos: str,
-            numero_trabajadores: str,
-            region: str
-        }
-
-    Returns:
-        Lista de productos ordenados por tasa de menor a mayor:
-        [{institucion, producto, monto_max_uf, tasa_anual_pct, plazo_max_meses, link}]
-
-    TODO: cargar datos desde backend/data/cmf_productos.json
-    TODO: filtrar por segmento (microempresa, pequeña empresa, mediana empresa)
-    TODO: opcionalmente llamar a integrations/cmf_mcp.py para tasas actualizadas
-    TODO: ordenar por tasa_anual_pct de menor a mayor
-    TODO: retornar máximo 3 productos para no sobrecargar al usuario
-    """
-    pass
+        for p in productos[:3]
+    ]

@@ -1,58 +1,68 @@
 {
-  "_comment": "Tablas del SII para cálculo de impuestos — verificar y actualizar con valores vigentes en www.sii.cl",
+  "_fuente": "SII.cl — Ley 21.755, Circular 53/2025. PPM rebajado transitoriamente 2025-2027.",
   "regimenes": {
-    "14D": {
-      "nombre": "Régimen Pro Pyme General",
-      "descripcion": "TODO: descripción del régimen 14D — tasa fija del 25% sobre la renta líquida imponible",
-      "tasa_impuesto_pct": 0,
+    "RES": {
+      "nombre": "Renta Efectiva Simplificada",
+      "descripcion": "Regimen para microempresarios personas naturales con giro. Sin contabilidad completa.",
+      "tasa_impuesto_pct": 25,
+      "tasa_ppm_pct": 0.125,
+      "nota_ppm": "Tasa rebajada transitoriamente por Ley 21.755 para 2025-2027 (normal: 0.25%)",
       "requisitos": {
-        "ingresos_max_uf": 0,
-        "TODO": "llenar con requisitos de capital propio, tipo de ingresos, etc."
+        "ingresos_max_uf_anuales": 2400,
+        "descripcion": "Personas naturales con giro, ingresos hasta UF 2.400 anuales (~$92M CLP)"
       },
       "beneficios": [
-        "TODO: llenar con beneficios específicos del 14D (PPM reducido, depreciación, etc.)"
+        "PPM reducido: 0.125% sobre ventas brutas mensuales (2025-2027)",
+        "Declaracion anual simplificada",
+        "No requiere contabilidad completa",
+        "Acceso a creditos con historial tributario desde el primer mes"
+      ]
+    },
+    "14D": {
+      "nombre": "Regimen Pro Pyme General",
+      "descripcion": "Para pymes con ventas hasta UF 75.000 anuales. IDPC 12.5% transitorio hasta 2027.",
+      "tasa_impuesto_pct": 12.5,
+      "tasa_impuesto_pct_normal": 25,
+      "nota_idpc": "12.5% transitorio 2025-2027 (Ley 21.755). Sube a 15% en 2028 y a 25% en 2029.",
+      "tasa_ppm_pct": 0.125,
+      "nota_ppm": "Rebajado a 0.125% para ingresos bajo UF 50.000 anuales (2025-2027)",
+      "requisitos": {
+        "ingresos_max_uf_anuales": 75000,
+        "descripcion": "Empresas con ventas hasta UF 75.000 anuales (~$2.887M CLP)"
+      },
+      "beneficios": [
+        "IDPC 12.5% en lugar del 25% normal (ahorro real del 50% en impuesto)",
+        "PPM reducido: 0.125% sobre ventas brutas mensuales",
+        "Depreciacion instantanea de activos",
+        "Acceso a Fogape y Corfo con garantia estatal"
       ]
     },
     "14A": {
-      "nombre": "Régimen General Semi-Integrado",
-      "descripcion": "TODO: descripción del régimen 14A — tasa del 27% con integración parcial",
-      "tasa_impuesto_pct": 0,
+      "nombre": "Regimen General Semi-Integrado",
+      "descripcion": "Para empresas grandes. Tasa 27% con credito parcial a socios.",
+      "tasa_impuesto_pct": 27,
+      "tasa_ppm_pct": 1.0,
       "requisitos": {
-        "TODO": "llenar con requisitos del régimen 14A"
+        "descripcion": "Empresas con ventas sobre UF 75.000 anuales o que elijan este regimen"
       },
       "beneficios": [
-        "TODO: llenar con beneficios específicos del 14A"
-      ]
-    },
-    "pro_pyme": {
-      "nombre": "Régimen Pro Pyme Transparente",
-      "descripcion": "TODO: descripción del régimen Pro Pyme Transparente — tributación a nivel del socio",
-      "tasa_impuesto_pct": 0,
-      "requisitos": {
-        "TODO": "llenar con requisitos del régimen Transparente"
-      },
-      "beneficios": [
-        "TODO: llenar con beneficios específicos del Pro Pyme Transparente"
+        "Credito del 65% del impuesto pagado por la empresa",
+        "Mayor flexibilidad contable"
       ]
     }
   },
-  "tasas_ppm": {
-    "_comment": "Pagos Provisionales Mensuales por régimen — obtener desde sitio SII",
-    "14D": {
-      "tasa_pct": 0,
-      "TODO": "llenar con tasa PPM vigente para el régimen 14D"
-    },
-    "14A": {
-      "tasa_pct": 0,
-      "TODO": "llenar con tasa PPM vigente para el régimen 14A"
-    },
-    "pro_pyme": {
-      "tasa_pct": 0,
-      "TODO": "llenar con tasa PPM vigente para Pro Pyme Transparente"
+  "multas_evasion": {
+    "descripcion": "Multas SII por no inicio de actividades siendo emprendedor con ingresos",
+    "multa_base_pct_impuesto": 35,
+    "reajuste_mensual_pct": 1.5,
+    "interes_mensual_pct": 1.5,
+    "rango_estimado_anual_por_rango_ingresos": {
+      "menos_500k": 120000,
+      "500k_1M": 280000,
+      "1M_2M": 560000,
+      "2M_5M": 1200000,
+      "mas_5M": 2800000
     }
   },
-  "tramos_impuesto_global_complementario": {
-    "_comment": "Tramos vigentes para el Impuesto Global Complementario — actualizar cada año",
-    "TODO": "llenar con los 7 tramos del IGC desde la tabla del SII (UTA, tasa marginal, descuento)"
-  }
+  "uf_a_clp": 38500
 }
