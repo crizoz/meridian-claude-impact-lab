@@ -1,31 +1,37 @@
-// ContadorAnimado — Número que cuenta de 0 al valor final al entrar en viewport
-//
-// Ideal para mostrar el total de beneficios detectados o las stats de impacto.
-// Usa Intersection Observer para iniciar la animación solo cuando es visible.
+// ContadorAnimado — número que cuenta de 0 al valor final al entrar en viewport.
 //
 // Props:
-//   valor:       number — valor final al que llegar
-//   prefijo:     string — texto antes del número (ej: "$" o "UF ")   [default: ""]
-//   sufijo:      string — texto después del número (ej: " MM" o " empresas")  [default: ""]
-//   duracion_ms: number — duración de la animación en ms  [default: 2000]
+//   valor:       number — valor final
+//   prefijo:     string — texto antes del número (ej: "$")   [default: ""]
+//   sufijo:      string — texto después del número            [default: ""]
+//   duracion_ms: number — duración de la animación en ms      [default: 2000]
 //
-// Implementación sugerida: useMotionValue + useSpring de Framer Motion,
-// o requestAnimationFrame con easing cuadrático propio.
-// Formatear el número con Intl.NumberFormat('es-CL') para separadores chilenos.
+// Usa Intersection Observer vía useInView de Framer Motion para iniciar
+// la animación solo cuando el elemento es visible en el viewport.
 
-import { useRef } from 'react'
+import { useRef, useState, useEffect } from 'react'
+import { useMotionValue, animate, useInView } from 'framer-motion'
 
 export default function ContadorAnimado({ valor, prefijo = '', sufijo = '', duracion_ms = 2000 }) {
   const ref = useRef(null)
-
-  // TODO: useInView de Framer Motion para detectar cuando entra al viewport
-  // TODO: useMotionValue(0) + useSpring hacia valor cuando inView === true
-  // TODO: useEffect para subscribirse al motionValue y actualizar el texto
-  // TODO: formatear con Intl.NumberFormat('es-CL') en cada frame
-
-  return (
-    <span ref={ref}>
-      {/* TODO: renderizar prefijo + número animado + sufijo */}
-    </span>
+  const inView = useInView(ref, { once: true })
+  const count = useMotionValue(0)
+  const [display, setDisplay] = useState(
+    `${prefijo}${new Intl.NumberFormat('es-CL').format(0)}${sufijo}`
   )
+
+  useEffect(() => {
+    if (!inView) return
+    const controls = animate(count, valor, {
+      duration: duracion_ms / 1000,
+      ease: 'easeOut',
+      onUpdate: v =>
+        setDisplay(
+          `${prefijo}${new Intl.NumberFormat('es-CL').format(Math.floor(v))}${sufijo}`
+        ),
+    })
+    return controls.stop
+  }, [inView, valor])
+
+  return <span ref={ref}>{display}</span>
 }

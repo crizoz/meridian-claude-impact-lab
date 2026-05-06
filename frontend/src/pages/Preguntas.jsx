@@ -27,26 +27,29 @@ import PreguntasFlow from '../components/PreguntasFlow'
 //   Body:     { messages: [{role: 'user'|'assistant', content: string}], mode: 'web' }
 //   Response: { response?: string, finished: boolean, beneficios_json?: BeneficiosJSON }
 //
-// Tipo BeneficiosJSON:
+// Tipo BeneficiosJSON (debe coincidir con lo que recibe Resultado.jsx):
 //   {
-//     total_estimado: number,                  // suma de monto_estimado de todos los beneficios
+//     total_estimado: number,                  // suma de monto_estimado, en CLP
 //     beneficios: {
-//       nombre: string,
-//       descripcion: string,
-//       monto_estimado: number,
-//       tipo: 'tributario' | 'financiero' | 'subsidio'
+//       nombre:         string,
+//       descripcion:    string,
+//       monto_estimado: number,                // CLP
+//       tipo:           'tributario' | 'financiero' | 'subsidio'
 //     }[],
 //     productos_cmf: {
-//       nombre: string,
-//       entidad: string,
-//       monto_maximo: number,
-//       tasa_estimada: string
+//       nombre:          string,
+//       entidad:         string,
+//       monto_maximo_uf: number,               // UF (ej: 120)
+//       tasa_anual_pct:  number,               // porcentaje (ej: 6.5 para 6,5%)
+//       plazo_max_meses: number,
+//       link:            string                // URL oficial de la institución
 //     }[],
 //     plan_accion: {
-//       paso: number,
-//       descripcion: string,
+//       paso:            number,
+//       descripcion:     string,
 //       tiempo_estimado: string,
-//       urgencia: 'alta' | 'media' | 'baja'
+//       urgencia:        'alta' | 'media' | 'baja',
+//       link_recurso:    string | null         // URL al recurso si aplica
 //     }[]
 //   }
 // ─────────────────────────────────────────────────────────────────────────────
@@ -98,21 +101,25 @@ const BENEFICIOS_MOCK = {
     {
       nombre: 'Crédito Pyme Express',
       entidad: 'Banco Estado',
-      monto_maximo: 20000000,
-      tasa_estimada: '0,5% mensual',
+      monto_maximo_uf: 300,
+      tasa_anual_pct: 6.5,
+      plazo_max_meses: 48,
+      link: 'https://www.bancoestado.cl',
     },
     {
       nombre: 'Capital de Trabajo Fogape',
       entidad: 'Banco de Chile',
-      monto_maximo: 10000000,
-      tasa_estimada: '0,7% mensual',
+      monto_maximo_uf: 120,
+      tasa_anual_pct: 7.2,
+      plazo_max_meses: 36,
+      link: 'https://www.bancochile.cl',
     },
   ],
   plan_accion: [
-    { paso: 1, descripcion: 'Inicia actividades en el SII en línea (20 min, gratis)', tiempo_estimado: 'Esta semana', urgencia: 'alta' },
-    { paso: 2, descripcion: 'Solicita Clave Empresas en el SII para gestionar tu RUT tributario', tiempo_estimado: 'Esta semana', urgencia: 'alta' },
-    { paso: 3, descripcion: 'Postula al subsidio de capital de trabajo en sercotec.cl', tiempo_estimado: 'Este mes', urgencia: 'media' },
-    { paso: 4, descripcion: 'Presenta tu carpeta tributaria en Banco Estado para evaluar crédito Pyme Express', tiempo_estimado: 'Este mes', urgencia: 'media' },
+    { paso: 1, descripcion: 'Inicia actividades en el SII en línea (20 min, gratis)', tiempo_estimado: 'Esta semana', urgencia: 'alta', link_recurso: 'https://misiir.sii.cl' },
+    { paso: 2, descripcion: 'Solicita Clave Empresas en el SII para gestionar tu RUT tributario', tiempo_estimado: 'Esta semana', urgencia: 'alta', link_recurso: 'https://www.sii.cl' },
+    { paso: 3, descripcion: 'Postula al subsidio de capital de trabajo en Sercotec', tiempo_estimado: 'Este mes', urgencia: 'media', link_recurso: 'https://www.sercotec.cl' },
+    { paso: 4, descripcion: 'Presenta tu carpeta tributaria en Banco Estado para evaluar crédito Pyme Express', tiempo_estimado: 'Este mes', urgencia: 'media', link_recurso: 'https://www.bancoestado.cl' },
   ],
 }
 
