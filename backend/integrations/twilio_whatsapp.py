@@ -1,50 +1,68 @@
+import json
 import os
 
-# Credenciales de Twilio — se inicializa el cliente solo cuando se usan las funciones
-TWILIO_ACCOUNT_SID = os.getenv("TWILIO_ACCOUNT_SID")
-TWILIO_AUTH_TOKEN = os.getenv("TWILIO_AUTH_TOKEN")
-TWILIO_WHATSAPP_NUMBER = os.getenv("TWILIO_WHATSAPP_NUMBER")  # formato: whatsapp:+14155238886
+from twilio.rest import Client
+from twilio.twiml.messaging_response import MessagingResponse
+
+from agent.claude import call_claude
+from db.supabase_client import get_conversacion, upsert_conversacion, guardar_perfil
+
+TWILIO_ACCOUNT_SID = os.getenv('TWILIO_ACCOUNT_SID')
+TWILIO_AUTH_TOKEN = os.getenv('TWILIO_AUTH_TOKEN')
+TWILIO_WHATSAPP_NUMBER = os.getenv('TWILIO_WHATSAPP_NUMBER', 'whatsapp:+14155238886')
 
 
-async def webhook(request) -> str:
-    """
-    Recibe y procesa el webhook de Twilio para mensajes entrantes de WhatsApp.
+def procesar_mensaje(form_data: dict) -> None:
+    telefono = form_data.get('From', '').replace('whatsapp:', '')
+    texto = form_data.get('Body', '').strip()
 
-    Flujo completo:
-    1. Usuario envía mensaje a tu número de WhatsApp Twilio
-    2. Twilio hace POST a esta URL con form-encoded: From, Body, MessageSid, etc.
-    3. Extraer From (ej: "whatsapp:+56912345678") y Body (texto del mensaje)
-    4. Consultar estado previo: db/supabase_client.get_conversacion(telefono)
-    5. Llamar a agent/claude.py con historial + mensaje nuevo
-    6. Guardar nuevo estado: db/supabase_client.upsert_conversacion(telefono, estado)
-    7. Si Claude responde rápido (<5s): retornar XML TwiML con la respuesta
-    8. Si Claude tarda: retornar TwiML vacío y llamar send_message cuando termine
+    conversacion = get_conversacion(telefono)
+    historial = conversacion['estado'].get('messages', []) if conversacion else []
 
-    TODO: extraer From y Body del request con form data de FastAPI (Request.form())
-    TODO: limpiar el "whatsapp:" prefix del número para guardar en Supabase
-    TODO: construir el XML de respuesta TwiML: <Response><Message>texto</Message></Response>
-    TODO: manejar el caso en que el usuario envía audio (Twilio lo transcribe)
+    historial.append({'role': 'user', 'content': texto})
 
-    Returns:
-        String con XML TwiML para que Twilio lo procese
-    """
-    pass
+    result = call_claude(historial, mode='whatsapp')
+
+    historial.append({'role': 'assistant', 'content': result.get('response', '')})
+    upsert_conversacion(telefono, {'messages': historial})
+
+    if result.get('finished') and result.get('beneficios_json'):
+        guardar_perfil({
+            'canal': 'whatsapp',
+            'beneficios_json': result['beneficios_json'],
+        })
+        bj = result['beneficios_json']
+        multa = bj.get('ahorro_anual_multas', 0)
+        credito = bj.get('acceso_capital_nuevo', 0)
+        total = bj.get('total_estimado', multa + credito)
+
+        respuesta = (
+            f"✅ ¡Listo! Calculé tus beneficios:\n\n"
+            f"💰 Crédito disponible: ${credito:,}\n"
+            f"🚫 Multas que evitas: ${multa:,}/año\n"
+            f"📊 Total estimado: ${total:,}\n\n"
+            f"Pasos para formalizarte:\n"
+        )
+        for i, p in enumerate(bj.get('plan_accion', [])[:3], 1):
+            if isinstance(p, dict):
+                respuesta += f"{p.get('paso', i)}. {p.get('descripcion', '')}\n"
+            else:
+                respuesta += f"{i}. {p}\n"
+    else:
+        respuesta = result.get('response', 'Hubo un error, intenta de nuevo.')
+
+    if len(respuesta) > 1000:
+        send_message(telefono, respuesta[:1000])
+        send_message(telefono, respuesta[1000:])
+    else:
+        send_message(telefono, respuesta)
 
 
-def send_message(telefono: str, mensaje: str) -> None:
-    """
-    Envía un mensaje de WhatsApp saliente vía Twilio (para respuestas asíncronas).
-
-    Usar cuando la respuesta de Claude tarda más de 5 segundos —
-    Twilio cierra la conexión del webhook a los 15 segundos.
-
-    Args:
-        telefono: Número en formato internacional sin prefijo (ej: "+56912345678")
-        mensaje: Texto del mensaje (máx ~1600 chars; WhatsApp lo divide automáticamente)
-
-    TODO: importar twilio.rest.Client y crear instancia con TWILIO_ACCOUNT_SID y AUTH_TOKEN
-    TODO: llamar client.messages.create(from_=TWILIO_WHATSAPP_NUMBER, to="whatsapp:"+telefono, body=mensaje)
-    TODO: si el mensaje supera 1000 chars, dividirlo en dos mensajes para mejor lectura
-    TODO: loggear el MessageSid retornado por Twilio para debugging
-    """
-    pass
+def send_message(telefono: str, mensaje: str) -> str:
+    client = Client(TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN)
+    msg = client.messages.create(
+        from_=TWILIO_WHATSAPP_NUMBER,
+        to=f'whatsapp:{telefono}',
+        body=mensaje,
+    )
+    return msg.sid

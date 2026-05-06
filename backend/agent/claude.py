@@ -48,27 +48,27 @@ def _parsear_respuesta(texto: str) -> dict:
         
     try:
         data = json.loads(json_candidate)
-        
+
         if isinstance(data, list):
             return {
-                'finished': True, 
+                'finished': True,
                 'beneficios_json': {
                     'productos_cmf': data,
                 }
             }
-            
+
         if not isinstance(data, dict):
             raise ValueError("Parsed JSON is not a dict or list")
-            
+
         is_finished = data.get('finished') is True
         has_final_keys = any(k in data for k in ['beneficios', 'plan_accion', 'productos_cmf', 'total_estimado', 'beneficios_json'])
-        
+
         if is_finished or has_final_keys:
             beneficios = data.get('beneficios_json')
             if not isinstance(beneficios, dict):
                 beneficios = data
             return {'finished': True, 'beneficios_json': beneficios}
-            
+
         return {'finished': False, 'response': data.get('response') or texto}
     except Exception:
         return {'finished': False, 'response': texto}

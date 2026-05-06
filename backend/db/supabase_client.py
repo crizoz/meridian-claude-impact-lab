@@ -15,47 +15,33 @@ def get_client() -> Client:
 
 
 def get_conversacion(telefono: str) -> dict | None:
-    """
-    Recupera el estado actual de una conversación por número de teléfono (WhatsApp).
-
-    TODO: query SELECT en tabla 'conversaciones' filtrando por telefono
-    TODO: retornar el dict con estado, contexto y paso_actual
-    TODO: retornar None si no existe (primera vez que escribe ese número)
-    """
-    pass
+    res = get_client().table('conversaciones').select('*').eq('telefono', telefono).execute()
+    return res.data[0] if res.data else None
 
 
 def upsert_conversacion(telefono: str, estado: dict) -> None:
-    """
-    Crea o actualiza el estado de una conversación de WhatsApp.
-
-    TODO: upsert en tabla 'conversaciones' con telefono como clave única
-    TODO: actualizar los campos estado (JSON), contexto y paso_actual
-    TODO: actualizar updated_at para saber cuándo fue el último mensaje
-    """
-    pass
+    get_client().table('conversaciones').upsert(
+        {'telefono': telefono, 'estado': estado, 'updated_at': 'now()'},
+        on_conflict='telefono',
+    ).execute()
 
 
 def guardar_perfil(perfil_data: dict) -> str:
-    """
-    Guarda el perfil completo de la empresa asesorada al terminar el flujo.
-
-    TODO: INSERT en tabla 'perfiles' con todos los campos del perfil
-    TODO: incluir el JSON de beneficios detectados en campo beneficios_json
-    TODO: registrar el canal ("web" o "whatsapp") en campo canal
-    TODO: retornar el UUID del perfil creado
-    TODO: llamar desde /chat cuando finished=True en la respuesta de Claude
-    """
-    pass
+    res = get_client().table('perfiles').insert(perfil_data).execute()
+    return res.data[0]['id']
 
 
 def get_stats() -> dict:
-    """
-    Obtiene las métricas de impacto para el StatsCounter del frontend.
+    client = get_client()
+    perfiles = client.table('perfiles').select('id', count='exact').execute()
+    empresas = perfiles.count or 0
 
-    TODO: COUNT de tabla 'perfiles' para empresas_asesoradas
-    TODO: SUM de beneficios_json->total para beneficios_detectados_mm
-    TODO: COUNT DISTINCT de perfiles.region para regiones_cubiertas
-    TODO: retornar {empresas_asesoradas: int, beneficios_detectados_mm: float, regiones: int}
-    """
-    pass
+    stats_row = client.table('stats').select('*').limit(1).execute()
+    if stats_row.data:
+        row = stats_row.data[0]
+        return {
+            'empresas_asesoradas': empresas,
+            'beneficios_detectados_mm': float(row.get('beneficios_detectados_mm', 0)),
+            'regiones_cubiertas': row.get('regiones_cubiertas', 0),
+        }
+    return {'empresas_asesoradas': empresas, 'beneficios_detectados_mm': 0, 'regiones_cubiertas': 0}

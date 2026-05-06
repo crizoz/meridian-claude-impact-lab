@@ -1,7 +1,29 @@
 {
   "permissions": {
     "allow": [
-      "Bash(git commit *)"
+      "Bash(git -C /Users/cristobalfloresvillegas/Desktop/Proyectos/meridian-claude-impact-lab log --oneline -10)",
+      "WebSearch",
+      "Bash(python -m pytest tests/test_tools.py -v)",
+      "Bash(python3 -m pytest tests/test_tools.py -v)",
+      "Bash(python3 -m venv .venv)",
+      "Bash(../.venv/bin/python -m pytest tests/test_tools.py -v)",
+      "Bash(../.venv/bin/python -m pytest tests/test_agent.py -v)",
+      "Bash(../.venv/bin/python *)",
+      "Bash(../.venv/bin/uvicorn main:app --reload --port 8000)",
+      "Bash(curl -s http://localhost:8000/health)",
+      "Bash(curl -s -X POST http://localhost:8000/chat -H 'Content-Type: application/json' -d '{\"messages\": [{\"role\": \"user\", \"content\": \"hola quiero un credito\"}], \"mode\": \"web\"}')",
+      "Bash(python3 -m json.tool)",
+      "Bash(curl -s -X POST http://localhost:8000/chat -H 'Content-Type: application/json' -d '{\"messages\": [{\"role\": \"user\", \"content\": \"hola\"}], \"mode\": \"web\"}')",
+      "Read(//tmp/**)",
+      "Bash(jobs)",
+      "Bash(pkill -f \"uvicorn main:app\")",
+      "Bash(../.venv/bin/pip install *)",
+      "Bash(git push *)",
+      "Bash(git pull *)",
+      "Bash(git merge *)",
+      "Bash(python -m pytest tests/ -v)",
+      "Bash(python3.13 -m pytest tests/ -v)",
+      "Bash(git stash *)"
     ]
   }
 }

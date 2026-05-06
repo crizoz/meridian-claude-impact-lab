@@ -4,11 +4,13 @@ from dotenv import load_dotenv
 
 load_dotenv(os.path.join(os.path.dirname(__file__), '..', '.env'))
 
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Request, BackgroundTasks
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
 from agent.claude import call_claude
+from integrations.twilio_whatsapp import procesar_mensaje
+from db.supabase_client import get_stats
 
 app = FastAPI(
     title='Meridian API',
@@ -51,12 +53,14 @@ async def chat(body: ChatRequest):
 
 
 @app.post('/whatsapp')
-async def whatsapp_webhook():
-    # Dev 2 implementa este endpoint
-    pass
+async def whatsapp_webhook(request: Request, background_tasks: BackgroundTasks):
+    form_data = dict(await request.form())
+    background_tasks.add_task(procesar_mensaje, form_data)
+    from fastapi.responses import Response
+    from twilio.twiml.messaging_response import MessagingResponse
+    return Response(content=str(MessagingResponse()), media_type='application/xml')
 
 
 @app.get('/stats')
 async def stats():
-    # Dev 2 implementa este endpoint
-    pass
+    return get_stats()
