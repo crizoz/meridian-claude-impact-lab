@@ -1,0 +1,58 @@
+{
+  "_comment": "Tablas del SII para cálculo de impuestos — verificar y actualizar con valores vigentes en www.sii.cl",
+  "regimenes": {
+    "14D": {
+      "nombre": "Régimen Pro Pyme General",
+      "descripcion": "TODO: descripción del régimen 14D — tasa fija del 25% sobre la renta líquida imponible",
+      "tasa_impuesto_pct": 0,
+      "requisitos": {
+        "ingresos_max_uf": 0,
+        "TODO": "llenar con requisitos de capital propio, tipo de ingresos, etc."
+      },
+      "beneficios": [
+        "TODO: llenar con beneficios específicos del 14D (PPM reducido, depreciación, etc.)"
+      ]
+    },
+    "14A": {
+      "nombre": "Régimen General Semi-Integrado",
+      "descripcion": "TODO: descripción del régimen 14A — tasa del 27% con integración parcial",
+      "tasa_impuesto_pct": 0,
+      "requisitos": {
+        "TODO": "llenar con requisitos del régimen 14A"
+      },
+      "beneficios": [
+        "TODO: llenar con beneficios específicos del 14A"
+      ]
+    },
+    "pro_pyme": {
+      "nombre": "Régimen Pro Pyme Transparente",
+      "descripcion": "TODO: descripción del régimen Pro Pyme Transparente — tributación a nivel del socio",
+      "tasa_impuesto_pct": 0,
+      "requisitos": {
+        "TODO": "llenar con requisitos del régimen Transparente"
+      },
+      "beneficios": [
+        "TODO: llenar con beneficios específicos del Pro Pyme Transparente"
+      ]
+    }
+  },
+  "tasas_ppm": {
+    "_comment": "Pagos Provisionales Mensuales por régimen — obtener desde sitio SII",
+    "14D": {
+      "tasa_pct": 0,
+      "TODO": "llenar con tasa PPM vigente para el régimen 14D"
+    },
+    "14A": {
+      "tasa_pct": 0,
+      "TODO": "llenar con tasa PPM vigente para el régimen 14A"
+    },
+    "pro_pyme": {
+      "tasa_pct": 0,
+      "TODO": "llenar con tasa PPM vigente para Pro Pyme Transparente"
+    }
+  },
+  "tramos_impuesto_global_complementario": {
+    "_comment": "Tramos vigentes para el Impuesto Global Complementario — actualizar cada año",
+    "TODO": "llenar con los 7 tramos del IGC desde la tabla del SII (UTA, tasa marginal, descuento)"
+  }
+}

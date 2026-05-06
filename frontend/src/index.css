@@ -1,0 +1,5 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* TODO: agregar variables CSS globales de Meridian aquí si se necesitan */

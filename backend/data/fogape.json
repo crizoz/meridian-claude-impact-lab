@@ -1,0 +1,48 @@
+{
+  "_comment": "Datos FOGAPE — Fondo de Garantía para Pequeños Empresarios. Verificar vigencia en www.fogape.cl o BancoEstado",
+  "descripcion": "FOGAPE garantiza créditos otorgados por instituciones financieras a micro, pequeñas y medianas empresas",
+  "rangos_credito": [
+    {
+      "rango_ventas_mensuales_clp": "0-10M",
+      "segmento": "Microempresa",
+      "monto_max_uf": 0,
+      "cobertura_garantia_pct": 0,
+      "plazo_max_meses": 0,
+      "tasa_garantia_anual_pct": 0,
+      "TODO": "llenar con valores reales de FOGAPE para microempresas desde BancoEstado o CMF"
+    },
+    {
+      "rango_ventas_mensuales_clp": "10M-50M",
+      "segmento": "Pequeña empresa",
+      "monto_max_uf": 0,
+      "cobertura_garantia_pct": 0,
+      "plazo_max_meses": 0,
+      "tasa_garantia_anual_pct": 0,
+      "TODO": "llenar con valores reales de FOGAPE para pequeñas empresas"
+    },
+    {
+      "rango_ventas_mensuales_clp": "50M-200M",
+      "segmento": "Mediana empresa",
+      "monto_max_uf": 0,
+      "cobertura_garantia_pct": 0,
+      "plazo_max_meses": 0,
+      "tasa_garantia_anual_pct": 0,
+      "TODO": "llenar con valores reales de FOGAPE para medianas empresas"
+    }
+  ],
+  "requisitos_generales": [
+    "TODO: años mínimos en el mercado",
+    "TODO: sin morosidad en el sistema financiero (DICOM limpio)",
+    "TODO: documentación requerida: iniciación de actividades, últimas declaraciones de renta",
+    "TODO: no estar en quiebra ni en convenio judicial previo"
+  ],
+  "instituciones_participantes": [
+    "TODO: listar bancos e instituciones que operan FOGAPE (BancoEstado, Scotiabank, etc.)"
+  ],
+  "pasos_para_solicitarlo": [
+    "TODO: paso 1 — verificar requisitos",
+    "TODO: paso 2 — ir a banco participante con documentos",
+    "TODO: paso 3 — banco evalúa y solicita garantía a FOGAPE si aprueba",
+    "TODO: agregar link a formulario o portal de BancoEstado/FOGAPE"
+  ]
+}

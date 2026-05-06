@@ -1,0 +1,57 @@
+{
+  "_comment": "Productos financieros regulados por la CMF. Verificar tasas vigentes en www.cmfchile.cl antes de usar en producción",
+  "productos": [
+    {
+      "institucion": "BancoEstado",
+      "producto": "Crédito MIPYME",
+      "tipo": "credito_comercial",
+      "segmento": ["microempresa", "pequeña empresa"],
+      "monto_min_uf": 10,
+      "monto_max_uf": 2000,
+      "tasa_referencial_anual_pct": 0,
+      "plazo_max_meses": 60,
+      "requiere_garantia": false,
+      "link": "https://www.bancoestado.cl",
+      "TODO": "actualizar tasa referencial y condiciones desde CMF o sitio de BancoEstado"
+    },
+    {
+      "institucion": "BancoEstado",
+      "producto": "Microcrédito Emprendedor",
+      "tipo": "microcredito",
+      "segmento": ["microempresa"],
+      "monto_min_uf": 1,
+      "monto_max_uf": 100,
+      "tasa_referencial_anual_pct": 0,
+      "plazo_max_meses": 36,
+      "requiere_garantia": false,
+      "link": "https://www.bancoestado.cl",
+      "TODO": "actualizar tasa y condiciones del Microcrédito Emprendedor"
+    },
+    {
+      "institucion": "Coopeuch",
+      "producto": "Crédito Emprendedor",
+      "tipo": "credito_comercial",
+      "segmento": ["microempresa"],
+      "monto_min_uf": 5,
+      "monto_max_uf": 500,
+      "tasa_referencial_anual_pct": 0,
+      "plazo_max_meses": 48,
+      "requiere_garantia": false,
+      "link": "https://www.coopeuch.cl",
+      "TODO": "actualizar tasa referencial y condiciones desde CMF o sitio de Coopeuch"
+    },
+    {
+      "institucion": "Oriencoop",
+      "producto": "Crédito Pyme",
+      "tipo": "credito_comercial",
+      "segmento": ["microempresa"],
+      "monto_min_uf": 5,
+      "monto_max_uf": 300,
+      "tasa_referencial_anual_pct": 0,
+      "plazo_max_meses": 36,
+      "requiere_garantia": false,
+      "link": "https://www.oriencoop.cl",
+      "TODO": "actualizar tasa referencial y condiciones desde CMF o sitio de Oriencoop"
+    }
+  ]
+}
