@@ -1,5 +1,4 @@
-// frontend/src/pages/Preguntas.jsx
-// Flujo conversacional · estilo crema + verde forestal
+// Preguntas — flujo conversacional basado en referencia Meridian.zip
 
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
@@ -85,18 +84,17 @@ function mensajeInicial(dolor) {
   return intros[dolor] ?? intros.quiero_crecer
 }
 
-// ─── Paleta ───────────────────────────────────────────────────────────────────
+// ─── Tokens de color ──────────────────────────────────────────────────────────
 const C = {
-  bg:        '#F2EAE0',
-  bgCard:    '#FFFFFF',
-  green:     '#1B3224',
-  greenMid:  '#2D5040',
-  textGray:  '#78716C',
-  textLight: '#A8A29E',
-  border:    '#E2D9CE',
+  bg:       '#F8F4ED',
+  bgCard:   '#EDEAE3',
+  ink:      '#1A1A1A',
+  inkMid:   '#4A4A48',
+  inkSoft:  '#76756F',
+  line:     '#DCD8CF',
+  lineSoft: '#E8E5DC',
+  accent:   '#0F3D2E',
 }
-
-const ease = [0.22, 1, 0.36, 1]
 
 // ─── Icono atrás ──────────────────────────────────────────────────────────────
 function IconBack() {
@@ -133,8 +131,8 @@ export default function Preguntas() {
   }, [messages])
 
   const pasoActual = messages.filter(m => m.role === 'user').length
-  const progreso = Math.min(pasoActual / TOTAL_PASOS, 1)
   const etapa = pasoActual < ETAPAS.length ? ETAPAS[pasoActual] : 'Finalizando…'
+  const stepLabel = `${String(pasoActual + 1).padStart(2, '0')} / ${String(TOTAL_PASOS).padStart(2, '0')}`
 
   async function handleSend(respuesta) {
     const nuevosMensajes = [...messages, { role: 'user', content: respuesta }]
@@ -182,123 +180,101 @@ export default function Preguntas() {
         maxWidth: '600px',
         width: '100%',
         margin: '0 auto',
-        padding: '0 24px',
+        padding: '0 22px',
         display: 'flex',
         flexDirection: 'column',
         height: '100%',
       }}>
 
         {/* ── Header ── */}
-        <header style={{ flexShrink: 0, paddingTop: '18px', paddingBottom: '16px' }}>
+        <header style={{ flexShrink: 0, paddingTop: '18px', paddingBottom: '14px' }}>
 
-          {/* Fila: volver + logo centrado */}
+          {/* Fila: volver · logo centrado · contador */}
           <div style={{
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
-            marginBottom: '18px',
+            marginBottom: 14,
           }}>
+            {/* Botón volver — transparente como en la referencia */}
             <button
               onClick={() => navigate('/')}
               style={{
                 display: 'flex',
                 alignItems: 'center',
-                gap: '4px',
-                background: C.bgCard,
-                border: `1px solid ${C.border}`,
-                borderRadius: '10px',
-                padding: '7px 13px 7px 10px',
+                gap: 6,
+                background: 'transparent',
+                border: 'none',
+                padding: '4px 0',
                 cursor: 'pointer',
-                color: C.greenMid,
-                fontFamily: "'DM Sans', sans-serif",
-                fontSize: '13px',
-                fontWeight: 600,
-                transition: 'border-color 0.15s',
-                boxShadow: '0 1px 3px rgba(27,50,36,0.06)',
+                color: C.inkMid,
+                fontFamily: "'Inter Tight', system-ui, sans-serif",
+                fontSize: 13, fontWeight: 500,
               }}
-              onMouseEnter={e => e.currentTarget.style.borderColor = C.green}
-              onMouseLeave={e => e.currentTarget.style.borderColor = C.border}
             >
               <IconBack />
               Volver
             </button>
 
             {/* Logo centrado */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <img src="/meridian-logo.svg" alt="Meridian" width={24} height={24}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <img src="/Logo.png" alt="Meridian" width={22} height={22}
                 style={{ objectFit: 'contain' }} />
               <span style={{
-                fontFamily: "'Syne', sans-serif",
-                fontSize: '15px',
-                fontWeight: 800,
-                color: C.green,
-                letterSpacing: '0.10em',
+                fontFamily: "'Inter Tight', system-ui, sans-serif",
+                fontSize: 14, fontWeight: 800,
+                color: C.ink, letterSpacing: '0.10em',
                 textTransform: 'uppercase',
               }}>
                 Meridian
               </span>
             </div>
 
-            {/* Placeholder para balance visual */}
-            <div style={{ width: '80px' }} />
+            {/* Contador en monospace */}
+            <div style={{
+              fontFamily: "'JetBrains Mono', monospace",
+              fontSize: 11, fontWeight: 400,
+              color: C.inkSoft,
+              letterSpacing: '0.04em',
+            }}>
+              {stepLabel}
+            </div>
           </div>
 
-          {/* Progreso */}
-          <div style={{
-            background: C.bgCard,
-            border: `1px solid ${C.border}`,
-            borderRadius: '14px',
-            padding: '14px 16px',
-            boxShadow: '0 1px 3px rgba(27,50,36,0.05)',
-          }}>
+          {/* Progreso: etiqueta de etapa + barra única */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
             <div style={{
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-              marginBottom: '10px',
+              fontSize: 10, fontWeight: 700, letterSpacing: '0.16em',
+              textTransform: 'uppercase', color: C.accent,
+              minWidth: 110, flexShrink: 0,
             }}>
-              <span style={{
-                fontFamily: "'DM Sans', sans-serif",
-                fontSize: '13px',
-                fontWeight: 600,
-                color: C.green,
-              }}>
-                {pasoActual > 0 ? etapa : 'Comenzando tu perfil…'}
-              </span>
-              {pasoActual > 0 && (
-                <span style={{
-                  fontFamily: "'DM Sans', sans-serif",
-                  fontSize: '12px',
-                  fontWeight: 500,
-                  color: C.textLight,
-                }}>
-                  {pasoActual} de {TOTAL_PASOS}
-                </span>
-              )}
+              {etapa}
             </div>
-
-            {/* Segmentos de progreso */}
-            <div style={{ display: 'flex', gap: '4px' }}>
-              {Array.from({ length: TOTAL_PASOS }).map((_, i) => (
-                <motion.div
-                  key={i}
-                  animate={{
-                    background: i < pasoActual ? C.green : '#E2D9CE',
-                  }}
-                  transition={{ duration: 0.35 }}
-                  style={{
-                    height: '4px',
-                    flex: 1,
-                    borderRadius: '100px',
-                  }}
-                />
-              ))}
+            <div style={{
+              flex: 1, height: 3,
+              background: C.lineSoft,
+              borderRadius: 100,
+              overflow: 'hidden',
+            }}>
+              <motion.div
+                animate={{ width: `${(Math.min(pasoActual, TOTAL_PASOS) / TOTAL_PASOS) * 100}%` }}
+                transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+                style={{
+                  height: '100%',
+                  background: C.accent,
+                  borderRadius: 100,
+                }}
+              />
             </div>
           </div>
         </header>
 
         {/* ── Conversación ── */}
-        <div style={{ flex: 1, overflow: 'hidden', display: 'flex', flexDirection: 'column', paddingTop: '12px' }}>
+        <div style={{
+          flex: 1, overflow: 'hidden',
+          display: 'flex', flexDirection: 'column',
+          paddingTop: '12px',
+        }}>
           <PreguntasFlow
             messages={messages}
             onSend={handleSend}

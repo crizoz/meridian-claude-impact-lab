@@ -1,4 +1,4 @@
-// PreguntasFlow — UI del flujo conversacional · estilo crema + verde forestal
+// PreguntasFlow — UI conversacional basada en referencia Meridian.zip
 //
 // Props:
 //   messages:  [{role: 'user'|'assistant', content: string}]
@@ -8,46 +8,38 @@
 import { useEffect, useRef, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 
-// ─── Paleta ───────────────────────────────────────────────────────────────────
+// ─── Tokens de color ──────────────────────────────────────────────────────────
 const C = {
-  bg:        '#F2EAE0',
-  bgCard:    '#FFFFFF',
-  green:     '#1B3224',
-  greenMid:  '#2D5040',
-  textGray:  '#78716C',
-  textLight: '#A8A29E',
-  border:    '#E2D9CE',
-  // Burbujas
-  asstBg:    '#FFFFFF',        // blanco sobre fondo crema
-  asstBorder:'#E2D9CE',
-  asstText:  '#1B3224',
-  userBg:    '#1B3224',        // verde forestal para el usuario
-  userText:  '#FFFFFF',
-  // Opciones
-  optBg:     '#FFFFFF',
-  optBorder: '#E2D9CE',
-  optHoverBg:'#F0F7F2',
-  optHoverBorder: '#1B3224',
-  optText:   '#1B3224',
+  bg:        '#F8F4ED',
+  bgCard:    '#EDEAE3',
+  bgCard2:   '#FFFFFF',
+  ink:       '#1A1A1A',
+  inkSoft:   '#76756F',
+  inkFaint:  '#A8A6A0',
+  line:      '#DCD8CF',
+  accent:    '#0F3D2E',
 }
 
 const ease = [0.22, 1, 0.36, 1]
 
-// ─── Avatar de Meridian ───────────────────────────────────────────────────────
-function MeridianAvatar() {
+// ─── Avatar circular del asistente ───────────────────────────────────────────
+function BotAvatar() {
   return (
-    <img
-      src="/meridian-logo.svg"
-      alt="Meridian"
-      width={30}
-      height={30}
-      style={{
-        flexShrink: 0,
-        marginRight: '8px',
-        marginTop: '2px',
-        objectFit: 'contain',
-      }}
-    />
+    <div style={{
+      width: 32, height: 32, borderRadius: '50%',
+      background: C.accent,
+      marginRight: 10, flexShrink: 0,
+      display: 'flex', alignItems: 'center', justifyContent: 'center',
+      marginTop: 2,
+    }}>
+      <img
+        src="/Logo.png"
+        alt=""
+        width={20}
+        height={20}
+        style={{ objectFit: 'contain', filter: 'brightness(0) invert(1)' }}
+      />
+    </div>
   )
 }
 
@@ -65,81 +57,65 @@ function Mensaje({ role, content }) {
         display: 'flex',
         justifyContent: isUser ? 'flex-end' : 'flex-start',
         alignItems: 'flex-start',
-        marginBottom: '12px',
+        marginBottom: 8,
       }}
     >
-      {!isUser && <MeridianAvatar />}
+      {!isUser && <BotAvatar />}
 
       <div style={{
         maxWidth: '78%',
-        background: isUser ? C.userBg : C.asstBg,
-        border: isUser ? 'none' : `1px solid ${C.asstBorder}`,
-        borderRadius: isUser ? '18px 18px 4px 18px' : '4px 18px 18px 18px',
+        background: isUser ? C.accent : C.bgCard,
+        color: isUser ? C.bg : C.ink,
         padding: '12px 16px',
-        boxShadow: isUser ? 'none' : '0 1px 3px rgba(27,50,36,0.06)',
+        borderRadius: isUser ? '18px 18px 4px 18px' : '4px 18px 18px 18px',
+        fontSize: 14.5, lineHeight: 1.5, fontWeight: 400,
       }}>
-        <p style={{
-          fontFamily: "'DM Sans', sans-serif",
-          fontSize: '15px',
-          fontWeight: 400,
-          color: isUser ? C.userText : C.asstText,
-          margin: 0,
-          lineHeight: 1.65,
-        }}>
-          {texto}
-        </p>
+        {texto}
       </div>
     </motion.div>
   )
 }
 
-// ─── Skeleton mientras Claude procesa ────────────────────────────────────────
-function SkeletonBurbuja() {
+// ─── Indicador de escritura (3 puntos pulsantes) ──────────────────────────────
+function Typing() {
   return (
-    <div style={{ display: 'flex', alignItems: 'flex-start', marginBottom: '12px' }}>
-      <motion.div
-        animate={{ opacity: [0.4, 0.75, 0.4] }}
-        transition={{ duration: 1.3, repeat: Infinity }}
-        style={{
-          width: '30px', height: '30px',
-          borderRadius: '8px',
-          background: '#D4C8BC',
-          flexShrink: 0,
-          marginRight: '8px',
-        }}
-      />
+    <div style={{ display: 'flex', alignItems: 'flex-start', marginBottom: 8 }}>
+      <BotAvatar />
       <div style={{
-        background: C.asstBg,
-        border: `1px solid ${C.asstBorder}`,
-        borderRadius: '4px 18px 18px 18px',
+        background: C.bgCard,
         padding: '14px 18px',
-        display: 'flex',
-        flexDirection: 'column',
-        gap: '8px',
-        boxShadow: '0 1px 3px rgba(27,50,36,0.06)',
+        borderRadius: '4px 18px 18px 18px',
+        display: 'flex', gap: 4, alignItems: 'center',
       }}>
-        {[130, 190, 95].map((w, i) => (
-          <motion.div
-            key={i}
-            animate={{ opacity: [0.12, 0.28, 0.12] }}
-            transition={{ duration: 1.6, repeat: Infinity, delay: i * 0.22 }}
-            style={{
-              width: `${w}px`, height: '12px',
-              background: '#D4C8BC',
-              borderRadius: '6px',
-            }}
-          />
+        {[0, 1, 2].map(i => (
+          <span key={i} style={{
+            width: 6, height: 6, borderRadius: '50%',
+            background: C.inkSoft,
+            display: 'inline-block',
+            animation: `pulse-soft 1.2s ${i * 0.15}s infinite`,
+          }} />
         ))}
       </div>
     </div>
   )
 }
 
-// ─── Parser de opciones ───────────────────────────────────────────────────────
+// ─── Parser de opciones del marcador [OPCIONES: A | B] ────────────────────────
 function parsearOpciones(content) {
   const match = content.match(/\[OPCIONES:\s*([^\]]+)\]/)
   if (!match) return null
   return match[1].split('|').map(o => o.trim()).filter(Boolean)
+}
+
+// ─── Flecha derecha ───────────────────────────────────────────────────────────
+function IconArrow({ size = 14 }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none"
+      stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+      <line x1="5" y1="12" x2="19" y2="12" />
+      <polyline points="12 5 19 12 12 19" />
+    </svg>
+  )
 }
 
 // ─── Icono de envío ───────────────────────────────────────────────────────────
@@ -153,7 +129,7 @@ function IconSend() {
   )
 }
 
-// ─── Botón de opción ──────────────────────────────────────────────────────────
+// ─── Botón de opción — ancho completo, flecha a la derecha ───────────────────
 function OpcionButton({ label, index, onClick, disabled }) {
   const [hovered, setHovered] = useState(false)
 
@@ -161,30 +137,32 @@ function OpcionButton({ label, index, onClick, disabled }) {
     <motion.button
       initial={{ opacity: 0, y: 6 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: index * 0.06, duration: 0.28, ease }}
-      whileTap={{ scale: 0.97 }}
+      transition={{ delay: 0.1 + index * 0.05, duration: 0.28, ease }}
+      whileTap={{ scale: 0.97, opacity: 0.85 }}
       onClick={onClick}
       disabled={disabled}
       onHoverStart={() => setHovered(true)}
       onHoverEnd={() => setHovered(false)}
       style={{
-        background: hovered ? C.optHoverBg : C.optBg,
-        border: `1.5px solid ${hovered ? C.optHoverBorder : C.optBorder}`,
-        borderRadius: '10px',
-        padding: '10px 18px',
-        color: C.optText,
-        fontFamily: "'DM Sans', sans-serif",
-        fontSize: '14px',
-        fontWeight: 500,
+        width: '100%',
+        textAlign: 'left',
+        background: C.bgCard,
+        border: `1.5px solid ${hovered ? C.accent : 'transparent'}`,
+        borderRadius: 14,
+        padding: '14px 16px',
+        fontSize: 14, fontWeight: 500,
+        color: C.ink,
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center',
         cursor: 'pointer',
-        transition: 'all 0.16s',
-        lineHeight: 1.2,
-        boxShadow: hovered
-          ? '0 2px 8px rgba(27,50,36,0.10)'
-          : '0 1px 3px rgba(27,50,36,0.05)',
+        transition: 'border-color 0.15s',
       }}
     >
       {label}
+      <span style={{ color: C.inkSoft, flexShrink: 0, marginLeft: 8 }}>
+        <IconArrow size={14} />
+      </span>
     </motion.button>
   )
 }
@@ -236,7 +214,7 @@ export default function PreguntasFlow({ messages, onSend, isLoading }) {
             <Mensaje key={i} role={m.role} content={m.content} />
           ))}
         </AnimatePresence>
-        {isLoading && <SkeletonBurbuja />}
+        {isLoading && <Typing />}
         <div ref={bottomRef} />
       </div>
 
@@ -246,10 +224,11 @@ export default function PreguntasFlow({ messages, onSend, isLoading }) {
           initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.26, ease }}
-          style={{ paddingTop: '12px', flexShrink: 0 }}
+          style={{ paddingTop: '12px', paddingBottom: '4px', flexShrink: 0 }}
         >
           {opciones ? (
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+            /* Opciones de respuesta rápida — botones full-width */
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
               {opciones.map((op, i) => (
                 <OpcionButton
                   key={op}
@@ -261,17 +240,15 @@ export default function PreguntasFlow({ messages, onSend, isLoading }) {
               ))}
             </div>
           ) : (
+            /* Input de texto libre */
             <div style={{
               display: 'flex',
               gap: '8px',
-              background: C.bgCard,
-              border: `1.5px solid ${inputFocused ? C.green : C.border}`,
+              background: C.bgCard2,
+              border: `1.5px solid ${inputFocused ? C.accent : C.line}`,
               borderRadius: '14px',
               padding: '4px 4px 4px 16px',
-              boxShadow: inputFocused
-                ? '0 0 0 3px rgba(27,50,36,0.08)'
-                : '0 1px 3px rgba(27,50,36,0.06)',
-              transition: 'border-color 0.18s, box-shadow 0.18s',
+              transition: 'border-color 0.18s',
             }}>
               <input
                 ref={inputRef}
@@ -287,8 +264,8 @@ export default function PreguntasFlow({ messages, onSend, isLoading }) {
                   background: 'transparent',
                   border: 'none',
                   outline: 'none',
-                  color: C.green,
-                  fontFamily: "'DM Sans', sans-serif",
+                  color: C.ink,
+                  fontFamily: "'Inter Tight', system-ui, sans-serif",
                   fontSize: '15px',
                   padding: '11px 0',
                 }}
@@ -298,15 +275,15 @@ export default function PreguntasFlow({ messages, onSend, isLoading }) {
                 onClick={handleEnviar}
                 disabled={!canSend}
                 style={{
-                  background: canSend ? C.green : '#E2D9CE',
+                  background: canSend ? C.accent : C.line,
                   border: 'none',
                   borderRadius: '10px',
                   padding: '10px 16px',
-                  color: canSend ? '#FFFFFF' : C.textLight,
+                  color: canSend ? '#FFFFFF' : C.inkFaint,
                   display: 'flex',
                   alignItems: 'center',
                   gap: '6px',
-                  fontFamily: "'DM Sans', sans-serif",
+                  fontFamily: "'Inter Tight', system-ui, sans-serif",
                   fontSize: '13px',
                   fontWeight: 600,
                   cursor: canSend ? 'pointer' : 'not-allowed',
