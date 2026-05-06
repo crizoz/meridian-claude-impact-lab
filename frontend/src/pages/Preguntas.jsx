@@ -4,143 +4,54 @@
 // Flujo:
 //   1. Lee `meridian_dolor` de sessionStorage (guardado en Entrada.jsx)
 //   2. Inicializa la primera pregunta de Claude según ese dolor
-//   3. Cada respuesta del usuario se envía al backend (o al mock)
+//   3. Cada respuesta del usuario se envía al backend POST /chat
 //   4. Claude responde con la siguiente pregunta
-//   5. Al terminar (finished=true) guarda beneficios_json y navega a /resultado
+//   5. Al terminar (finished=true) normaliza beneficios_json y navega a /resultado
 
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import PreguntasFlow from '../components/PreguntasFlow'
 
-// ─────────────────────────────────────────────────────────────────────────────
-// MOCK BACKEND
-// Simula las respuestas de Claude durante el desarrollo local.
-//
-// PARA CONECTAR EL BACKEND REAL:
-//   1. Borrar las constantes FLUJO_PREGUNTAS_MOCK y BENEFICIOS_MOCK
-//   2. Borrar la función mockRespuesta
-//   3. En handleSend: borrar el bloque "── MODO MOCK ──" y descomentar "── MODO REAL ──"
-//
-// Contrato esperado del backend:
-//   POST ${VITE_API_URL}/chat
-//   Body:     { messages: [{role: 'user'|'assistant', content: string}], mode: 'web' }
-//   Response: { response?: string, finished: boolean, beneficios_json?: BeneficiosJSON }
-//
-// Tipo BeneficiosJSON (debe coincidir con lo que recibe Resultado.jsx):
-//   {
-//     total_estimado: number,                  // suma de monto_estimado, en CLP
-//     beneficios: {
-//       nombre:         string,
-//       descripcion:    string,
-//       monto_estimado: number,                // CLP
-//       tipo:           'tributario' | 'financiero' | 'subsidio'
-//     }[],
-//     productos_cmf: {
-//       nombre:          string,
-//       entidad:         string,
-//       monto_maximo_uf: number,               // UF (ej: 120)
-//       tasa_anual_pct:  number,               // porcentaje (ej: 6.5 para 6,5%)
-//       plazo_max_meses: number,
-//       link:            string                // URL oficial de la institución
-//     }[],
-//     plan_accion: {
-//       paso:            number,
-//       descripcion:     string,
-//       tiempo_estimado: string,
-//       urgencia:        'alta' | 'media' | 'baja',
-//       link_recurso:    string | null         // URL al recurso si aplica
-//     }[]
-//   }
-// ─────────────────────────────────────────────────────────────────────────────
+const TOTAL_PASOS_ESTIMADOS = 6
 
-const TOTAL_PASOS_ESTIMADOS = 6   // Claude puede variar; esto es solo para la barra visual
+const API_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:8000'
 
-// Preguntas que el mock envía como "respuesta de Claude" a cada paso del usuario.
-// Index 0 = respuesta tras la 1ª respuesta del usuario, index 1 tras la 2ª, etc.
-const FLUJO_PREGUNTAS_MOCK = [
-  "Entendido. ¿Cuál es el ingreso mensual aproximado de tu negocio? [OPCIONES: Menos de $500.000 | $500.000 a $2.000.000 | $2.000.000 a $5.000.000 | Más de $5.000.000]",
-  "¿En qué región de Chile opera tu negocio principalmente? [OPCIONES: Metropolitana | Valparaíso | Biobío | Otra región]",
-  "¿Cuántas personas trabajan contigo en el negocio? [OPCIONES: Solo yo | 2 a 5 personas | Más de 5 personas]",
-  "¿Actualmente tienes iniciación de actividades en el SII o solo operas con tu RUT personal? [OPCIONES: Solo RUT personal | Tengo iniciación de actividades | Tengo empresa formal (SpA o Ltda.)]",
-  "Último dato. ¿Tienes cargas familiares o deudas financieras activas? [OPCIONES: Tengo cargas familiares | Tengo deudas activas | Ambas | Ninguna de las anteriores]",
-  // Después de FLUJO_PREGUNTAS_MOCK.length respuestas → mockRespuesta retorna finished=true
-]
-
-// Datos de ejemplo para la página de resultados.
-// Reemplazar por la respuesta real del backend (misma estructura).
-const BENEFICIOS_MOCK = {
-  total_estimado: 3240000,
-  beneficios: [
-    {
-      nombre: 'Régimen Pro Pyme (14 D)',
-      descripcion: 'Tributación simplificada sobre flujo de caja. Pagas impuestos solo cuando cobras, no cuando facturas.',
-      monto_estimado: 1200000,
-      tipo: 'tributario',
-    },
-    {
-      nombre: 'Crédito Fogape Reactiva',
-      descripcion: 'Garantía estatal del 80% para acceder a crédito bancario a tasa preferencial.',
-      monto_estimado: 8000000,
-      tipo: 'financiero',
-    },
-    {
-      nombre: 'Subsidio Capital de Trabajo Sercotec',
-      descripcion: 'Subsidio no reembolsable de hasta $2.000.000 para micro y pequeñas empresas.',
-      monto_estimado: 2000000,
-      tipo: 'subsidio',
-    },
-    {
-      nombre: 'Deducción de gastos tributarios',
-      descripcion: 'Al formalizar puedes deducir hasta el 100% de tus gastos de operación (arriendos, honorarios, insumos).',
-      monto_estimado: 640000,
-      tipo: 'tributario',
-    },
-  ],
-  productos_cmf: [
-    {
-      nombre: 'Crédito Pyme Express',
-      entidad: 'Banco Estado',
-      monto_maximo_uf: 300,
-      tasa_anual_pct: 6.5,
-      plazo_max_meses: 48,
-      link: 'https://www.bancoestado.cl',
-    },
-    {
-      nombre: 'Capital de Trabajo Fogape',
-      entidad: 'Banco de Chile',
-      monto_maximo_uf: 120,
-      tasa_anual_pct: 7.2,
-      plazo_max_meses: 36,
-      link: 'https://www.bancochile.cl',
-    },
-  ],
-  plan_accion: [
-    { paso: 1, descripcion: 'Inicia actividades en el SII en línea (20 min, gratis)', tiempo_estimado: 'Esta semana', urgencia: 'alta', link_recurso: 'https://misiir.sii.cl' },
-    { paso: 2, descripcion: 'Solicita Clave Empresas en el SII para gestionar tu RUT tributario', tiempo_estimado: 'Esta semana', urgencia: 'alta', link_recurso: 'https://www.sii.cl' },
-    { paso: 3, descripcion: 'Postula al subsidio de capital de trabajo en Sercotec', tiempo_estimado: 'Este mes', urgencia: 'media', link_recurso: 'https://www.sercotec.cl' },
-    { paso: 4, descripcion: 'Presenta tu carpeta tributaria en Banco Estado para evaluar crédito Pyme Express', tiempo_estimado: 'Este mes', urgencia: 'media', link_recurso: 'https://www.bancoestado.cl' },
-  ],
+// Mapea la urgencia según la posición del paso (el backend no la envía)
+function urgenciaPorPaso(index) {
+  if (index < 2) return 'alta'
+  if (index < 4) return 'media'
+  return 'baja'
 }
 
-// Simula la llamada a /api/chat con delay realista (600–1000 ms).
-// Recibe el array completo de messages (ya incluye el nuevo mensaje del usuario).
-function mockRespuesta(mensajes) {
-  const pasoUsuario = mensajes.filter(m => m.role === 'user').length
-  return new Promise(resolve => {
-    setTimeout(() => {
-      if (pasoUsuario > FLUJO_PREGUNTAS_MOCK.length) {
-        resolve({ finished: true, beneficios_json: BENEFICIOS_MOCK })
-      } else {
-        resolve({ finished: false, response: FLUJO_PREGUNTAS_MOCK[pasoUsuario - 1] })
-      }
-    }, 600 + Math.random() * 400)
-  })
+// Normaliza el beneficios_json del backend al formato que esperan los componentes.
+// Claude puede usar nombres de campo distintos según el turno de conversación.
+function normalizarBeneficios(raw) {
+  return {
+    total_estimado: raw.diferencia_anual_pesos ?? raw.total_estimado ?? 0,
+    beneficios: (raw.beneficios ?? []).map(b => ({
+      tipo: b.tipo === 'estatal' ? 'subsidio' : b.tipo,
+      nombre: b.titulo ?? b.nombre ?? '',
+      descripcion: b.descripcion ?? '',
+      monto_estimado: b.monto_estimado ?? 0,
+    })),
+    productos_cmf: (raw.productos_cmf ?? []).map(p => ({
+      nombre: p.producto ?? p.nombre ?? '',
+      entidad: p.institucion ?? p.entidad ?? '',
+      monto_maximo_uf: p.monto_max_uf ?? p.monto_maximo_uf ?? 0,
+      tasa_anual_pct: p.tasa_anual_pct ?? 0,
+      plazo_max_meses: p.plazo_max_meses ?? null,
+      link: p.link ?? '',
+    })),
+    plan_accion: (raw.plan_accion ?? []).map((p, i) => ({
+      paso: p.numero ?? p.paso ?? i + 1,
+      descripcion: p.accion ?? p.descripcion ?? '',
+      tiempo_estimado: p.plazo ?? p.tiempo_estimado ?? '',
+      urgencia: p.urgencia ?? urgenciaPorPaso(i),
+      link_recurso: p.link_recurso ?? null,
+    })),
+  }
 }
-
-// ─────────────────────────────────────────────────────────────────────────────
-// FIN MOCK BACKEND
-// ─────────────────────────────────────────────────────────────────────────────
 
 // Primer mensaje de Claude, personalizado según el punto de dolor de Entrada.jsx.
 // El marcador [OPCIONES: ...] hace que PreguntasFlow renderice botones.
@@ -194,27 +105,34 @@ export default function Preguntas() {
     setIsLoading(true)
 
     try {
-      // ── MODO MOCK ─────────────────────────────────────────────────────────
-      // Borrar este bloque al conectar el backend real
-      const data = await mockRespuesta(nuevosMensajes)
-      // ── FIN MODO MOCK ─────────────────────────────────────────────────────
+      const res = await fetch(`${API_URL}/chat`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ messages: nuevosMensajes, mode: 'web' }),
+      })
+      if (!res.ok) throw new Error(`Error ${res.status}: ${await res.text()}`)
+      const data = await res.json()
 
-      // ── MODO REAL (descomentar al conectar el backend) ────────────────────
-      // const res = await fetch(`${import.meta.env.VITE_API_URL}/chat`, {
-      //   method: 'POST',
-      //   headers: { 'Content-Type': 'application/json' },
-      //   body: JSON.stringify({ messages: nuevosMensajes, mode: 'web' }),
-      // })
-      // if (!res.ok) throw new Error(`Error ${res.status}: ${await res.text()}`)
-      // const data = await res.json()
-      // ── FIN MODO REAL ─────────────────────────────────────────────────────
+      // El backend puede devolver finished:true directamente, o bien devolver
+      // finished:false con el JSON completo en data.response (bug edge case).
+      const isFinished = data.finished || (() => {
+        try { return !!JSON.parse(data.response ?? '')?.finished } catch { return false }
+      })()
+      const beneficiosRaw = data.beneficios_json
+        ?? (() => { try { return JSON.parse(data.response ?? '')?.beneficios_json } catch { return null } })()
 
-      if (data.finished) {
-        sessionStorage.setItem('meridian_beneficios', JSON.stringify(data.beneficios_json))
+      if (isFinished) {
+        const beneficios = normalizarBeneficios(beneficiosRaw ?? {})
+        sessionStorage.setItem('meridian_beneficios', JSON.stringify(beneficios))
         sessionStorage.removeItem('meridian_messages')
         navigate('/resultado')
       } else {
-        setMessages([...nuevosMensajes, { role: 'assistant', content: data.response }])
+        // Mostrar solo el texto de la pregunta, no el JSON completo
+        const textoRespuesta = (() => {
+          try { return JSON.parse(data.response ?? '')?.response ?? data.response }
+          catch { return data.response }
+        })()
+        setMessages([...nuevosMensajes, { role: 'assistant', content: textoRespuesta }])
       }
     } catch (err) {
       // TODO: reemplazar console.error por un toast o mensaje de error inline

@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import json
 import os
 
@@ -39,20 +41,26 @@ def _limpiar_texto(texto: str) -> str:
 def _parsear_respuesta(texto: str) -> dict:
     try:
         data = json.loads(_limpiar_texto(texto))
-        if data.get('finished') is True:
-            return {'finished': True, 'beneficios_json': data['beneficios_json']}
-        return {'finished': False, 'response': data.get('response', texto)}
-    except json.JSONDecodeError:
+        if data.get('finished'):
+            beneficios = data.get('beneficios_json') or {}
+            return {'finished': True, 'beneficios_json': beneficios}
+        return {'finished': False, 'response': data.get('response') or texto}
+    except Exception:
         return {'finished': False, 'response': texto}
 
 
 def call_claude(messages: list[dict], mode: str = 'web') -> dict:
     system = SYSTEM_PROMPT_WEB if mode == 'web' else SYSTEM_PROMPT_WHATSAPP
-    history = list(messages)
+    # La API de Anthropic requiere que el primer mensaje sea role 'user'.
+    # El frontend incluye el saludo inicial de Meridian como 'assistant',
+    # así que lo descartamos antes de enviar.
+    history = [m for m in messages if isinstance(m.get('content'), str) or isinstance(m.get('content'), list)]
+    while history and history[0].get('role') == 'assistant':
+        history = history[1:]
 
     for _ in range(10):
         response = get_client().messages.create(
-            model='claude-sonnet-4-6',
+            model='claude-haiku-4-5-20251001',
             max_tokens=2048,
             system=system,
             messages=history,

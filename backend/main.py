@@ -1,4 +1,5 @@
 import os
+from typing import List, Optional
 from dotenv import load_dotenv
 
 load_dotenv(os.path.join(os.path.dirname(__file__), '..', '.env'))
@@ -25,14 +26,14 @@ app.add_middleware(
 
 
 class ChatRequest(BaseModel):
-    messages: list[dict]
+    messages: List[dict]
     mode: str = 'web'
 
 
 class ChatResponse(BaseModel):
-    response: str | None = None
+    response: Optional[str] = None
     finished: bool
-    beneficios_json: dict | None = None
+    beneficios_json: Optional[dict] = None
 
 
 @app.get('/health')

@@ -79,7 +79,7 @@ export default function ProductoCard({ nombre, entidad, monto_maximo_uf, tasa_an
         {[
           { label: 'Monto máx.', valor: `${monto_maximo_uf} UF` },
           { label: 'Tasa anual', valor: `${tasa_anual_pct}%` },
-          { label: 'Plazo', valor: `${plazo_max_meses} meses` },
+          { label: 'Plazo', valor: plazo_max_meses ? `${plazo_max_meses} meses` : 'Consultar' },
         ].map(s => (
           <div key={s.label}>
             <p style={{
