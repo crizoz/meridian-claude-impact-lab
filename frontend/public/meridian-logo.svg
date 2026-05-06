@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" fill="none">
+  <!-- M shape: outer frame -->
+  <path d="M10 88 L10 40 L50 15 L90 40 L90 88"
+    stroke="#2563EB" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round"/>
+  <!-- M shape: inner valley -->
+  <path d="M10 40 L50 64 L90 40"
+    stroke="#2563EB" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round"/>
+  <!-- Compass needle: solid filled diamond through center -->
+  <path d="M50 9 L71 50 L50 91 L29 50 Z" fill="#2563EB"/>
+  <!-- Meridian horizontal lines (visible outside the needle) -->
+  <rect x="4" y="47" width="25" height="6" rx="3" fill="#2563EB"/>
+  <rect x="71" y="47" width="25" height="6" rx="3" fill="#2563EB"/>
+</svg>

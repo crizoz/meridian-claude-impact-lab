@@ -13,25 +13,24 @@ html, body, #root {
   height: 100%;
   margin: 0;
   padding: 0;
-  background: #FAFAF8;
+  background: #F2EAE0;
 }
 
 body {
   font-family: 'DM Sans', sans-serif;
-  color: #18181B;
+  color: #1B3224;
 }
 
-/* ─── Selección de texto ─────────────────────────────────────────────────────── */
+/* ─── Selección de texto (crema + verde) ─────────────────────────────────────── */
 ::selection {
-  background: rgba(245, 158, 11, 0.20);
-  color: #18181B;
+  background: rgba(27, 50, 36, 0.15);
+  color: #1B3224;
 }
 
-/* ─── Placeholder del input ──────────────────────────────────────────────────── */
+/* ─── Input del chat ─────────────────────────────────────────────────────────── */
 .meridian-input::placeholder {
-  color: #A1A1AA;
+  color: #A8A29E;
 }
-
 .meridian-input:focus {
   outline: none;
 }
@@ -44,19 +43,14 @@ body {
   background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: #D4D4D8;
+  background: #D4C8BC;
   border-radius: 100px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #A1A1AA;
+  background: #A8A29E;
 }
 
-/* ─── Botones: quitar highlight táctil en móvil ──────────────────────────────── */
+/* ─── Quitar highlight táctil en móvil ───────────────────────────────────────── */
 button {
   -webkit-tap-highlight-color: transparent;
-}
-
-/* ─── Suavizado de transiciones de página ────────────────────────────────────── */
-html {
-  scroll-behavior: smooth;
 }

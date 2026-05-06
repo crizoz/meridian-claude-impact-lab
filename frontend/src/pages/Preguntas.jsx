@@ -1,5 +1,5 @@
 // frontend/src/pages/Preguntas.jsx
-// Flujo conversacional — diseño blanco, profesional y cálido
+// Flujo conversacional · estilo crema + verde forestal
 
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
@@ -25,7 +25,7 @@ const ETAPAS = [
   'Tu negocio',
   'Ingresos',
   'Ubicación',
-  'Equipo',
+  'Tu equipo',
   'Situación tributaria',
   'Últimos detalles',
 ]
@@ -41,10 +41,10 @@ const FLUJO_PREGUNTAS_MOCK = [
 const BENEFICIOS_MOCK = {
   total_estimado: 3240000,
   beneficios: [
-    { nombre: 'Régimen Pro Pyme (14 D)', descripcion: 'Tributación simplificada sobre flujo de caja. Pagas impuestos solo cuando cobras, no cuando facturas.', monto_estimado: 1200000, tipo: 'tributario' },
+    { nombre: 'Régimen Pro Pyme (14 D)', descripcion: 'Tributación simplificada sobre flujo de caja.', monto_estimado: 1200000, tipo: 'tributario' },
     { nombre: 'Crédito Fogape Reactiva', descripcion: 'Garantía estatal del 80% para acceder a crédito bancario a tasa preferencial.', monto_estimado: 8000000, tipo: 'financiero' },
-    { nombre: 'Subsidio Capital de Trabajo Sercotec', descripcion: 'Subsidio no reembolsable de hasta $2.000.000 para micro y pequeñas empresas.', monto_estimado: 2000000, tipo: 'subsidio' },
-    { nombre: 'Deducción de gastos tributarios', descripcion: 'Al formalizar puedes deducir hasta el 100% de tus gastos de operación.', monto_estimado: 640000, tipo: 'tributario' },
+    { nombre: 'Subsidio Capital de Trabajo Sercotec', descripcion: 'Subsidio no reembolsable de hasta $2.000.000.', monto_estimado: 2000000, tipo: 'subsidio' },
+    { nombre: 'Deducción de gastos tributarios', descripcion: 'Deduce hasta el 100% de tus gastos de operación.', monto_estimado: 640000, tipo: 'tributario' },
   ],
   productos_cmf: [
     { nombre: 'Crédito Pyme Express', entidad: 'Banco Estado', monto_maximo: 20000000, tasa_estimada: '0,5% mensual' },
@@ -52,9 +52,9 @@ const BENEFICIOS_MOCK = {
   ],
   plan_accion: [
     { paso: 1, descripcion: 'Inicia actividades en el SII en línea (20 min, gratis)', tiempo_estimado: 'Esta semana', urgencia: 'alta' },
-    { paso: 2, descripcion: 'Solicita Clave Empresas en el SII para gestionar tu RUT tributario', tiempo_estimado: 'Esta semana', urgencia: 'alta' },
+    { paso: 2, descripcion: 'Solicita Clave Empresas en el SII', tiempo_estimado: 'Esta semana', urgencia: 'alta' },
     { paso: 3, descripcion: 'Postula al subsidio de capital de trabajo en sercotec.cl', tiempo_estimado: 'Este mes', urgencia: 'media' },
-    { paso: 4, descripcion: 'Presenta tu carpeta tributaria en Banco Estado para evaluar crédito Pyme Express', tiempo_estimado: 'Este mes', urgencia: 'media' },
+    { paso: 4, descripcion: 'Presenta tu carpeta tributaria en Banco Estado', tiempo_estimado: 'Este mes', urgencia: 'media' },
   ],
 }
 
@@ -75,25 +75,25 @@ function mockRespuesta(mensajes) {
 
 function mensajeInicial(dolor) {
   const intros = {
-    credito_rechazado: 'Hola, soy Meridian. Me contaste que te rechazaron un crédito. Antes de mostrarte cuánto dinero estás dejando sobre la mesa, necesito entender tu situación. ¿Hace cuánto tiempo tienes tu negocio? [OPCIONES: Menos de 1 año | 1 a 3 años | Más de 3 años]',
-    necesito_boleta:   'Hola, soy Meridian. Entiendo que te pidieron una boleta y no puedes emitirla. Vamos a ver cuánto te cuesta no estar formalizado. ¿Hace cuánto tiempo llevas en este trabajo? [OPCIONES: Menos de 1 año | 1 a 3 años | Más de 3 años]',
-    quiero_crecer:     'Hola, soy Meridian. Hay beneficios del Estado que tu negocio aún no está usando. Vamos a calcular exactamente cuáles son. ¿Hace cuánto tiempo tienes tu negocio? [OPCIONES: Menos de 1 año | 1 a 3 años | Más de 3 años]',
+    credito_rechazado:
+      'Hola, soy Meridian. Me contaste que no puedes acceder a créditos. Vamos a entender tu situación para mostrarte exactamente qué alternativas existen para ti. ¿Hace cuánto tiempo tienes tu negocio? [OPCIONES: Menos de 1 año | 1 a 3 años | Más de 3 años]',
+    necesito_boleta:
+      'Hola, soy Meridian. Entiendo que los impuestos te generan dudas. Vamos a aclarar tu situación fiscal y mostrarte el camino más simple hacia la tranquilidad. ¿Hace cuánto tiempo llevas en este negocio? [OPCIONES: Menos de 1 año | 1 a 3 años | Más de 3 años]',
+    quiero_crecer:
+      'Hola, soy Meridian. Quieres hacer crecer tu negocio — genial. Vamos a encontrar las herramientas del Estado que te corresponden. ¿Hace cuánto tiempo tienes tu negocio? [OPCIONES: Menos de 1 año | 1 a 3 años | Más de 3 años]',
   }
   return intros[dolor] ?? intros.quiero_crecer
 }
 
-// ─── Sistema de diseño ────────────────────────────────────────────────────────
+// ─── Paleta ───────────────────────────────────────────────────────────────────
 const C = {
-  bg:          '#FAFAF8',
-  bgWhite:     '#FFFFFF',
-  text:        '#18181B',
-  textMid:     '#52525B',
-  textMuted:   '#71717A',
-  textFaint:   '#A1A1AA',
-  amber:       '#F59E0B',
-  amberDark:   '#D97706',
-  amberBorder: '#FCD34D',
-  border:      '#E4E4E7',
+  bg:        '#F2EAE0',
+  bgCard:    '#FFFFFF',
+  green:     '#1B3224',
+  greenMid:  '#2D5040',
+  textGray:  '#78716C',
+  textLight: '#A8A29E',
+  border:    '#E2D9CE',
 }
 
 const ease = [0.22, 1, 0.36, 1]
@@ -105,40 +105,6 @@ function IconBack() {
       stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
       <polyline points="15 18 9 12 15 6" />
     </svg>
-  )
-}
-
-// ─── Logo compacto ────────────────────────────────────────────────────────────
-function MeridianLogoCompact() {
-  return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-      <div style={{
-        width: '28px',
-        height: '28px',
-        borderRadius: '8px',
-        background: '#18181B',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        flexShrink: 0,
-      }}>
-        <span style={{
-          fontFamily: "'Syne', sans-serif",
-          fontSize: '12px',
-          fontWeight: 800,
-          color: C.amber,
-          letterSpacing: '-0.04em',
-          lineHeight: 1,
-        }}>M</span>
-      </div>
-      <span style={{
-        fontFamily: "'Syne', sans-serif",
-        fontSize: '15px',
-        fontWeight: 700,
-        color: C.text,
-        letterSpacing: '-0.02em',
-      }}>Meridian</span>
-    </div>
   )
 }
 
@@ -223,19 +189,14 @@ export default function Preguntas() {
       }}>
 
         {/* ── Header ── */}
-        <header style={{
-          flexShrink: 0,
-          paddingTop: '20px',
-          paddingBottom: '16px',
-          borderBottom: `1px solid ${C.border}`,
-          marginBottom: '20px',
-        }}>
-          {/* Fila logo + botón volver */}
+        <header style={{ flexShrink: 0, paddingTop: '18px', paddingBottom: '16px' }}>
+
+          {/* Fila: volver + logo centrado */}
           <div style={{
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
-            marginBottom: '16px',
+            marginBottom: '18px',
           }}>
             <button
               onClick={() => navigate('/')}
@@ -243,111 +204,101 @@ export default function Preguntas() {
                 display: 'flex',
                 alignItems: 'center',
                 gap: '4px',
-                background: 'transparent',
+                background: C.bgCard,
                 border: `1px solid ${C.border}`,
-                borderRadius: '8px',
-                padding: '6px 12px 6px 8px',
+                borderRadius: '10px',
+                padding: '7px 13px 7px 10px',
                 cursor: 'pointer',
-                color: C.textMid,
+                color: C.greenMid,
                 fontFamily: "'DM Sans', sans-serif",
                 fontSize: '13px',
-                fontWeight: 500,
-                transition: 'border-color 0.15s, color 0.15s',
+                fontWeight: 600,
+                transition: 'border-color 0.15s',
+                boxShadow: '0 1px 3px rgba(27,50,36,0.06)',
               }}
-              onMouseEnter={e => {
-                e.currentTarget.style.borderColor = C.amberBorder
-                e.currentTarget.style.color = C.amberDark
-              }}
-              onMouseLeave={e => {
-                e.currentTarget.style.borderColor = C.border
-                e.currentTarget.style.color = C.textMid
-              }}
+              onMouseEnter={e => e.currentTarget.style.borderColor = C.green}
+              onMouseLeave={e => e.currentTarget.style.borderColor = C.border}
             >
               <IconBack />
               Volver
             </button>
 
-            <MeridianLogoCompact />
+            {/* Logo centrado */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <img src="/meridian-logo.svg" alt="Meridian" width={24} height={24}
+                style={{ objectFit: 'contain' }} />
+              <span style={{
+                fontFamily: "'Syne', sans-serif",
+                fontSize: '15px',
+                fontWeight: 800,
+                color: C.green,
+                letterSpacing: '0.10em',
+                textTransform: 'uppercase',
+              }}>
+                Meridian
+              </span>
+            </div>
+
+            {/* Placeholder para balance visual */}
+            <div style={{ width: '80px' }} />
           </div>
 
           {/* Progreso */}
-          <div>
+          <div style={{
+            background: C.bgCard,
+            border: `1px solid ${C.border}`,
+            borderRadius: '14px',
+            padding: '14px 16px',
+            boxShadow: '0 1px 3px rgba(27,50,36,0.05)',
+          }}>
             <div style={{
               display: 'flex',
               justifyContent: 'space-between',
               alignItems: 'center',
-              marginBottom: '8px',
+              marginBottom: '10px',
             }}>
               <span style={{
                 fontFamily: "'DM Sans', sans-serif",
-                fontSize: '12px',
-                fontWeight: 500,
-                color: C.textMuted,
-              }}>
-                {pasoActual > 0 ? etapa : 'Comenzando…'}
-              </span>
-              <span style={{
-                fontFamily: "'DM Sans', sans-serif",
-                fontSize: '12px',
+                fontSize: '13px',
                 fontWeight: 600,
-                color: pasoActual > 0 ? C.amberDark : C.textFaint,
+                color: C.green,
               }}>
-                {pasoActual > 0 ? `${pasoActual} de ${TOTAL_PASOS}` : ''}
+                {pasoActual > 0 ? etapa : 'Comenzando tu perfil…'}
               </span>
+              {pasoActual > 0 && (
+                <span style={{
+                  fontFamily: "'DM Sans', sans-serif",
+                  fontSize: '12px',
+                  fontWeight: 500,
+                  color: C.textLight,
+                }}>
+                  {pasoActual} de {TOTAL_PASOS}
+                </span>
+              )}
             </div>
 
-            {/* Barra de progreso */}
-            <div style={{
-              height: '4px',
-              background: '#E4E4E7',
-              borderRadius: '100px',
-              overflow: 'hidden',
-            }}>
-              <motion.div
-                animate={{ width: `${progreso * 100}%` }}
-                transition={{ duration: 0.5, ease }}
-                style={{
-                  height: '100%',
-                  background: progreso > 0
-                    ? `linear-gradient(to right, #F59E0B, #D97706)`
-                    : 'transparent',
-                  borderRadius: '100px',
-                  minWidth: progreso > 0 ? '8px' : '0px',
-                }}
-              />
+            {/* Segmentos de progreso */}
+            <div style={{ display: 'flex', gap: '4px' }}>
+              {Array.from({ length: TOTAL_PASOS }).map((_, i) => (
+                <motion.div
+                  key={i}
+                  animate={{
+                    background: i < pasoActual ? C.green : '#E2D9CE',
+                  }}
+                  transition={{ duration: 0.35 }}
+                  style={{
+                    height: '4px',
+                    flex: 1,
+                    borderRadius: '100px',
+                  }}
+                />
+              ))}
             </div>
-
-            {/* Indicadores de paso */}
-            {pasoActual > 0 && (
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ duration: 0.3 }}
-                style={{
-                  display: 'flex',
-                  gap: '4px',
-                  marginTop: '8px',
-                }}
-              >
-                {Array.from({ length: TOTAL_PASOS }).map((_, i) => (
-                  <div
-                    key={i}
-                    style={{
-                      height: '3px',
-                      flex: 1,
-                      borderRadius: '100px',
-                      background: i < pasoActual ? C.amber : '#E4E4E7',
-                      transition: 'background 0.3s',
-                    }}
-                  />
-                ))}
-              </motion.div>
-            )}
           </div>
         </header>
 
-        {/* ── Área de conversación ── */}
-        <div style={{ flex: 1, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
+        {/* ── Conversación ── */}
+        <div style={{ flex: 1, overflow: 'hidden', display: 'flex', flexDirection: 'column', paddingTop: '12px' }}>
           <PreguntasFlow
             messages={messages}
             onSend={handleSend}
@@ -355,7 +306,6 @@ export default function Preguntas() {
           />
         </div>
 
-        {/* Espacio inferior */}
         <div style={{ height: '20px', flexShrink: 0 }} />
       </div>
     </div>
