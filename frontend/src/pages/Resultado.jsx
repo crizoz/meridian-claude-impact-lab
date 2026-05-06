@@ -1,43 +1,6 @@
 // frontend/src/pages/Resultado.jsx
 // Muestra los beneficios detectados por Claude al finalizar el flujo de preguntas.
-//
-// Fuente de datos: sessionStorage['meridian_beneficios'] (guardado en Preguntas.jsx).
-// Si no hay datos, redirige a /preguntas.
-//
-// Secciones:
-//   1. Hero — total de beneficios animado (ContadorAnimado)
-//   2. Beneficios detectados — BeneficioCard con stagger de entrada
-//   3. Créditos disponibles — ProductoCard con stagger de entrada
-//   4. Plan de acción — PlanAccion con checkboxes persistidos en localStorage
-//   5. CTAs — WhatsApp + descarga PDF
-//
-// ─────────────────────────────────────────────────────────────────────────────
-// CONECTAR BACKEND:
-//
-// Esta página NO hace fetch directamente. Recibe los datos desde sessionStorage,
-// que los guarda Preguntas.jsx al finalizar el flujo con Claude.
-//
-// Si en el futuro se quiere recargar o compartir resultados por URL (por ejemplo,
-// vía /resultado?sesion=abc123), agregar un useEffect que haga:
-//
-//   const params = new URLSearchParams(location.search)
-//   const sesionId = params.get('sesion')
-//   if (sesionId) {
-//     fetch(`${import.meta.env.VITE_API_URL}/resultado/${sesionId}`)
-//       .then(r => r.json())
-//       .then(setData)
-//   }
-//
-// El endpoint debe devolver el mismo tipo BeneficiosJSON que retorna /chat.
-// ─────────────────────────────────────────────────────────────────────────────
-//
-// WhatsApp:
-//   Configurar VITE_WHATSAPP_NUMBER en .env con el número Twilio (ej: 56999999999)
-//   El link wa.me abre la app con un mensaje preformateado que incluye el monto.
-//
-// PDF:
-//   Por ahora usa window.print() con @media print de index.css.
-//   TODO: reemplazar por POST /api/pdf → blob descargable para mayor control de estilos.
+// Datos desde sessionStorage['meridian_beneficios'] (guardado en Preguntas.jsx).
 
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
@@ -47,32 +10,53 @@ import BeneficioCard from '../components/BeneficioCard'
 import ProductoCard from '../components/ProductoCard'
 import PlanAccion from '../components/PlanAccion'
 
-// Número de WhatsApp (Twilio sandbox o número real).
-// Configurar en .env: VITE_WHATSAPP_NUMBER=56912345678
-const WA_NUMBER = import.meta.env.VITE_WHATSAPP_NUMBER ?? '56999999999'
+const C = {
+  bg: '#F8F4ED',
+  bgCard: '#EDEAE3',
+  bgCard2: '#FFFFFF',
+  ink: '#1A1A1A',
+  inkMid: '#4A4A48',
+  inkSoft: '#76756F',
+  inkFaint: '#A8A6A0',
+  line: '#DCD8CF',
+  lineSoft: '#E8E5DC',
+  accent: '#0F3D2E',
+  accentDeep: '#082319',
+}
 
-// Variantes para el stagger de entrada de las cards.
-// BeneficioCard y ProductoCard definen sus propias variantes con los mismos
-// nombres ("hidden" / "show"), por eso Framer Motion las propaga automáticamente.
+const WA_NUMBER = '14155238886'
+
 const staggerContainer = {
   hidden: {},
   show: { transition: { staggerChildren: 0.1, delayChildren: 0.05 } },
 }
 
-// Label de sección — mismo estilo tipográfico que en Entrada.jsx y Preguntas.jsx
 function SectionLabel({ texto }) {
   return (
     <p style={{
-      fontFamily: "'DM Sans', sans-serif",
-      fontSize: '13px',
-      fontWeight: 500,
-      color: 'rgba(245,240,232,0.35)',
-      textTransform: 'uppercase',
-      letterSpacing: '0.1em',
-      margin: '0 0 16px',
+      fontSize: 10, fontWeight: 700,
+      color: C.accent, textTransform: 'uppercase',
+      letterSpacing: '0.16em', margin: '0 0 14px',
     }}>
       {texto}
     </p>
+  )
+}
+
+function IconBack() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+      stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+      <polyline points="15 18 9 12 15 6" />
+    </svg>
+  )
+}
+
+function IconWhatsApp() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+      <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z" />
+    </svg>
   )
 }
 
@@ -81,201 +65,212 @@ export default function Resultado() {
   const [data, setData] = useState(null)
 
   useEffect(() => {
-    // Leer beneficios guardados por Preguntas.jsx al finalizar el flujo
     const raw = sessionStorage.getItem('meridian_beneficios')
-    if (!raw) {
-      navigate('/preguntas')
-      return
-    }
-    try {
-      setData(JSON.parse(raw))
-    } catch {
-      // JSON inválido → volver al flujo
-      navigate('/preguntas')
-    }
+    if (!raw) { navigate('/preguntas'); return }
+    try { setData(JSON.parse(raw)) }
+    catch { navigate('/preguntas') }
   }, [navigate])
 
-  // No renderizar nada hasta tener los datos (evita flash de contenido vacío)
   if (!data) return null
 
+  const montoFormateado = new Intl.NumberFormat('es-CL', {
+    style: 'currency', currency: 'CLP', maximumFractionDigits: 0,
+  }).format(data.total_estimado)
+
   const handleWhatsApp = () => {
-    // Mensaje preformateado con el monto detectado para contextualizar la consulta
-    const monto = new Intl.NumberFormat('es-CL', {
-      style: 'currency',
-      currency: 'CLP',
-      maximumFractionDigits: 0,
-    }).format(data.total_estimado)
     const texto = encodeURIComponent(
-      `¡Hola! Usé Meridian y encontré ${monto} en beneficios disponibles para mi negocio. Me gustaría recibir asesoría para acceder a ellos.`
+      `¡Hola! Usé Meridian y encontré ${montoFormateado} en beneficios para mi negocio. Me gustaría recibir asesoría para acceder a ellos.`
     )
     window.open(`https://wa.me/${WA_NUMBER}?text=${texto}`, '_blank', 'noopener,noreferrer')
   }
 
-  const handleDescargarPDF = () => {
-    // Imprime la página actual como PDF usando el diálogo nativo del navegador.
-    // TODO: reemplazar por generación desde el backend para mayor control de estilos:
-    //   const res = await fetch(`${import.meta.env.VITE_API_URL}/pdf`, {
-    //     method: 'POST',
-    //     headers: { 'Content-Type': 'application/json' },
-    //     body: JSON.stringify(data),
-    //   })
-    //   const blob = await res.blob()
-    //   const url = URL.createObjectURL(blob)
-    //   const a = document.createElement('a')
-    //   a.href = url; a.download = 'meridian-reporte.pdf'; a.click()
-    //   URL.revokeObjectURL(url)
-    window.print()
-  }
-
   return (
-    <div style={{
-      minHeight: '100vh',
-      background: '#0F0E0C',
-      position: 'relative',
-    }}>
+    <div style={{ minHeight: '100vh', background: C.bg }}>
 
-      {/* Fondo decorativo — mismo que Entrada.jsx */}
+      {/* ── Header fijo ── */}
       <div style={{
-        position: 'absolute',
-        inset: 0,
-        backgroundImage: 'radial-gradient(ellipse 80% 50% at 50% -10%, rgba(251,191,36,0.10) 0%, transparent 70%)',
-        pointerEvents: 'none',
-      }} />
-
-      <div style={{
-        maxWidth: '560px',
-        margin: '0 auto',
-        padding: '0 24px 80px',
-        position: 'relative',
+        padding: '16px 22px',
+        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+        borderBottom: `1px solid ${C.lineSoft}`,
+        background: C.bg,
+        position: 'sticky', top: 0, zIndex: 10,
       }}>
-
-        {/* ── Logo + navegación ── */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.4 }}
+        <button
+          onClick={() => navigate('/')}
           style={{
-            paddingTop: '32px',
-            paddingBottom: '40px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
+            display: 'flex', alignItems: 'center', gap: 6,
+            background: 'transparent', border: 'none',
+            color: C.inkMid, cursor: 'pointer',
+            fontFamily: "'Inter Tight', system-ui, sans-serif",
+            fontSize: 13, fontWeight: 500, padding: '4px 0',
           }}
         >
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <div style={{
-              width: '28px', height: '28px', borderRadius: '8px',
-              background: '#FBBF24',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-            }}>
-              <div style={{ width: '10px', height: '10px', borderRadius: '50%', background: '#0F0E0C' }} />
-            </div>
-            <span style={{
-              fontFamily: "'Syne', sans-serif",
-              fontSize: '18px', fontWeight: 700,
-              color: '#F5F0E8', letterSpacing: '-0.02em',
-            }}>
-              Meridian
-            </span>
-          </div>
-          <button
-            onClick={() => navigate('/')}
-            style={{
-              background: 'transparent',
-              border: 'none',
-              color: 'rgba(245,240,232,0.3)',
-              fontFamily: "'DM Sans', sans-serif",
-              fontSize: '13px',
-              cursor: 'pointer',
-              padding: '4px 0',
-            }}
-          >
-            ← Calcular de nuevo
-          </button>
-        </motion.div>
+          <IconBack />
+          Calcular de nuevo
+        </button>
+
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <img src="/Logo.svg" alt="Meridian"
+            style={{ height: 28, width: 'auto', objectFit: 'contain', flexShrink: 0 }} />
+          <span style={{
+            fontFamily: "'Inter Tight', system-ui, sans-serif",
+            fontSize: 14, fontWeight: 800, color: C.ink,
+            letterSpacing: '0.10em', textTransform: 'uppercase',
+          }}>
+            Meridian
+          </span>
+        </div>
+
+        <button
+          onClick={() => window.print()}
+          style={{
+            background: 'transparent', border: `1px solid ${C.line}`,
+            borderRadius: 100, padding: '5px 14px',
+            fontSize: 11, fontWeight: 600, color: C.inkMid,
+            cursor: 'pointer', letterSpacing: '0.04em',
+          }}
+        >
+          PDF ↓
+        </button>
+      </div>
+
+      <div style={{ maxWidth: 560, margin: '0 auto', padding: '0 22px 80px' }}>
 
         {/* ── Hero: total de beneficios ── */}
         <motion.div
-          initial={{ opacity: 0, y: 16 }}
+          initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1, duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-          style={{ marginBottom: '56px' }}
+          transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+          style={{
+            background: C.accent,
+            borderRadius: 24,
+            padding: '32px 28px',
+            margin: '24px 0',
+            textAlign: 'center',
+          }}
         >
           <p style={{
-            fontFamily: "'DM Sans', sans-serif",
-            fontSize: '13px', fontWeight: 500,
-            color: 'rgba(245,240,232,0.35)',
-            textTransform: 'uppercase',
-            letterSpacing: '0.1em',
-            margin: '0 0 8px',
+            fontSize: 10, fontWeight: 700, color: 'rgba(255,255,255,0.55)',
+            textTransform: 'uppercase', letterSpacing: '0.18em', margin: '0 0 12px',
           }}>
-            Beneficios detectados para tu negocio
+            Beneficios disponibles para tu perfil
           </p>
           <div style={{
-            fontFamily: "'Syne', sans-serif",
-            fontSize: 'clamp(48px, 12vw, 72px)',
-            fontWeight: 800,
-            color: '#F5F0E8',
-            lineHeight: 1,
-            letterSpacing: '-0.04em',
-            marginBottom: '16px',
+            fontFamily: "'Inter Tight', system-ui, sans-serif",
+            fontSize: 'clamp(40px, 12vw, 60px)',
+            fontWeight: 800, color: '#FFFFFF',
+            lineHeight: 1, letterSpacing: '-0.03em',
+            marginBottom: 14,
           }}>
             $<ContadorAnimado valor={data.total_estimado} duracion_ms={2200} />
           </div>
           <p style={{
-            fontFamily: "'DM Sans', sans-serif",
-            fontSize: '16px',
-            color: 'rgba(245,240,232,0.55)',
-            margin: 0,
-            lineHeight: 1.7,
-            maxWidth: '420px',
+            fontSize: 14, color: 'rgba(255,255,255,0.70)',
+            margin: '0 0 24px', lineHeight: 1.5, maxWidth: 280, marginLeft: 'auto', marginRight: 'auto',
           }}>
-            Accedes a estos beneficios una vez que formalices tu actividad.
-            La ruta es más corta de lo que crees.
+            Es lo que ganarías anualmente una vez que formalices tu actividad.
           </p>
+
+          {/* Resumen rápido de categorías */}
+          <div style={{
+            display: 'flex', gap: 10, justifyContent: 'center', flexWrap: 'wrap',
+          }}>
+            {data.beneficios.length > 0 && (
+              <div style={{
+                background: 'rgba(255,255,255,0.12)', borderRadius: 100,
+                padding: '6px 14px', fontSize: 12, fontWeight: 600, color: '#FFFFFF',
+              }}>
+                {data.beneficios.length} beneficios
+              </div>
+            )}
+            {data.productos_cmf?.length > 0 && (
+              <div style={{
+                background: 'rgba(255,255,255,0.12)', borderRadius: 100,
+                padding: '6px 14px', fontSize: 12, fontWeight: 600, color: '#FFFFFF',
+              }}>
+                {data.productos_cmf.length} productos financieros
+              </div>
+            )}
+            {data.plan_accion?.length > 0 && (
+              <div style={{
+                background: 'rgba(255,255,255,0.12)', borderRadius: 100,
+                padding: '6px 14px', fontSize: 12, fontWeight: 600, color: '#FFFFFF',
+              }}>
+                {data.plan_accion.length} pasos de acción
+              </div>
+            )}
+          </div>
         </motion.div>
 
-        {/* ── Sección: beneficios tributarios y financieros ── */}
-        <motion.section
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: '-60px' }}
-          transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-          style={{ marginBottom: '48px' }}
+        {/* ── CTA WhatsApp — visible arriba ── */}
+        <motion.button
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2, duration: 0.5 }}
+          whileTap={{ scale: 0.98 }}
+          onClick={handleWhatsApp}
+          style={{
+            width: '100%',
+            background: '#25D366',
+            border: 'none',
+            borderRadius: 16,
+            padding: '16px 24px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: 10,
+            color: '#fff',
+            fontFamily: "'Inter Tight', system-ui, sans-serif",
+            fontSize: 15, fontWeight: 700,
+            cursor: 'pointer',
+            marginBottom: 28,
+            letterSpacing: '0.02em',
+          }}
         >
-          <SectionLabel texto={`${data.beneficios.length} beneficios disponibles para tu perfil`} />
+          <IconWhatsApp />
+          Recibir asesoría por WhatsApp
+        </motion.button>
 
-          {/* staggerContainer propaga "hidden"/"show" a los BeneficioCard hijos */}
-          <motion.div
-            variants={staggerContainer}
-            initial="hidden"
-            whileInView="show"
-            viewport={{ once: true, margin: '-40px' }}
-            style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}
-          >
-            {data.beneficios.map((b, i) => (
-              <BeneficioCard key={i} {...b} />
-            ))}
-          </motion.div>
-        </motion.section>
-
-        {/* ── Sección: créditos del sistema financiero (CMF) ── */}
-        {data.productos_cmf?.length > 0 && (
+        {/* ── Beneficios detectados ── */}
+        {data.beneficios.length > 0 && (
           <motion.section
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: '-60px' }}
+            viewport={{ once: true, margin: '-50px' }}
             transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-            style={{ marginBottom: '48px' }}
+            style={{ marginBottom: 36 }}
           >
-            <SectionLabel texto="Créditos disponibles en el sistema financiero" />
-
+            <SectionLabel texto={`${data.beneficios.length} beneficios para tu perfil`} />
             <motion.div
               variants={staggerContainer}
               initial="hidden"
               whileInView="show"
               viewport={{ once: true, margin: '-40px' }}
-              style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}
+              style={{ display: 'flex', flexDirection: 'column', gap: 10 }}
+            >
+              {data.beneficios.map((b, i) => (
+                <BeneficioCard key={i} {...b} />
+              ))}
+            </motion.div>
+          </motion.section>
+        )}
+
+        {/* ── Créditos CMF ── */}
+        {data.productos_cmf?.length > 0 && (
+          <motion.section
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: '-50px' }}
+            transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+            style={{ marginBottom: 36 }}
+          >
+            <SectionLabel texto="Créditos disponibles en el sistema financiero" />
+            <motion.div
+              variants={staggerContainer}
+              initial="hidden"
+              whileInView="show"
+              viewport={{ once: true, margin: '-40px' }}
+              style={{ display: 'flex', flexDirection: 'column', gap: 10 }}
             >
               {data.productos_cmf.map((p, i) => (
                 <ProductoCard key={i} {...p} />
@@ -284,84 +279,77 @@ export default function Resultado() {
           </motion.section>
         )}
 
-        {/* ── Sección: plan de acción con checkboxes ── */}
-        <motion.section
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: '-60px' }}
-          transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-          style={{ marginBottom: '48px' }}
-        >
-          <PlanAccion pasos={data.plan_accion} />
-        </motion.section>
+        {/* ── Plan de acción ── */}
+        {data.plan_accion?.length > 0 && (
+          <motion.section
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: '-50px' }}
+            transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+            style={{ marginBottom: 36 }}
+          >
+            <PlanAccion pasos={data.plan_accion} />
+          </motion.section>
+        )}
 
-        {/* ── CTAs principales ── */}
+        {/* ── CTAs finales ── */}
         <motion.div
           initial={{ opacity: 0, y: 16 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.5 }}
-          style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginBottom: '48px' }}
+          style={{ display: 'flex', flexDirection: 'column', gap: 10 }}
         >
-          {/* WhatsApp — CTA principal */}
-          <motion.button
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
+          <button
             onClick={handleWhatsApp}
             style={{
-              background: '#25D366',
-              border: 'none',
-              borderRadius: '14px',
-              padding: '16px 24px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: '10px',
-              color: '#fff',
-              fontFamily: "'DM Sans', sans-serif",
-              fontSize: '15px',
-              fontWeight: 500,
-              cursor: 'pointer',
+              width: '100%',
+              background: '#25D366', border: 'none',
+              borderRadius: 16, padding: '16px 24px',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              gap: 10, color: '#fff',
+              fontFamily: "'Inter Tight', system-ui, sans-serif",
+              fontSize: 15, fontWeight: 700, cursor: 'pointer',
+              letterSpacing: '0.02em',
             }}
           >
-            <span style={{ fontSize: '20px' }}>💬</span>
-            Continuar por WhatsApp
-          </motion.button>
+            <IconWhatsApp />
+            Hablar con un asesor por WhatsApp
+          </button>
 
-          {/* PDF — CTA secundario */}
-          <motion.button
-            whileHover={{ scale: 1.02, background: 'rgba(255,255,255,0.07)' }}
-            whileTap={{ scale: 0.98 }}
-            onClick={handleDescargarPDF}
+          <button
+            onClick={() => window.print()}
             style={{
-              background: 'rgba(255,255,255,0.04)',
-              border: '1px solid rgba(255,255,255,0.1)',
-              borderRadius: '14px',
-              padding: '14px 24px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: '10px',
-              color: 'rgba(245,240,232,0.7)',
-              fontFamily: "'DM Sans', sans-serif",
-              fontSize: '15px',
-              fontWeight: 500,
-              cursor: 'pointer',
-              transition: 'background 0.2s',
+              width: '100%',
+              background: 'transparent',
+              border: `1.5px solid ${C.line}`,
+              borderRadius: 16, padding: '14px 24px',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              gap: 8, color: C.inkMid,
+              fontFamily: "'Inter Tight', system-ui, sans-serif",
+              fontSize: 14, fontWeight: 600, cursor: 'pointer',
             }}
           >
-            <span style={{ fontSize: '18px' }}>↓</span>
-            Descargar reporte PDF
-          </motion.button>
+            Descargar reporte PDF ↓
+          </button>
+
+          <button
+            onClick={() => navigate('/')}
+            style={{
+              background: 'transparent', border: 'none',
+              color: C.inkFaint, cursor: 'pointer', padding: '8px',
+              fontFamily: "'Inter Tight', system-ui, sans-serif",
+              fontSize: 13, fontWeight: 500,
+            }}
+          >
+            ← Calcular de nuevo con otro perfil
+          </button>
         </motion.div>
 
-        {/* ── Footer ── */}
+        {/* Footer */}
         <p style={{
-          fontFamily: "'DM Sans', sans-serif",
-          fontSize: '12px',
-          color: 'rgba(245,240,232,0.2)',
-          textAlign: 'center',
-          lineHeight: 1.6,
+          fontSize: 12, color: C.inkFaint,
+          textAlign: 'center', marginTop: 36, lineHeight: 1.6,
         }}>
           Meridian no almacena datos personales sin tu consentimiento.
           <br />
