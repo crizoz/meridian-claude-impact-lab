@@ -1,12 +1,5 @@
 // frontend/src/pages/Preguntas.jsx
-// Flujo conversacional — Meridian le hace preguntas al usuario una por vez.
-//
-// Flujo:
-//   1. Lee `meridian_dolor` de sessionStorage (guardado en Entrada.jsx)
-//   2. Inicializa la primera pregunta de Claude según ese dolor
-//   3. Cada respuesta del usuario se envía al backend (o al mock)
-//   4. Claude responde con la siguiente pregunta
-//   5. Al terminar (finished=true) guarda beneficios_json y navega a /resultado
+// Flujo conversacional — diseño blanco, profesional y cálido
 
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
@@ -15,36 +8,25 @@ import PreguntasFlow from '../components/PreguntasFlow'
 
 // ─────────────────────────────────────────────────────────────────────────────
 // MOCK BACKEND
-// Simula las respuestas de Claude durante el desarrollo local.
 //
 // PARA CONECTAR EL BACKEND REAL:
-//   1. Borrar las constantes FLUJO_PREGUNTAS_MOCK y BENEFICIOS_MOCK
-//   2. Borrar la función mockRespuesta
-//   3. En handleSend: borrar el bloque "── MODO MOCK ──" y descomentar "── MODO REAL ──"
+//   1. Borrar FLUJO_PREGUNTAS_MOCK, BENEFICIOS_MOCK y mockRespuesta
+//   2. En handleSend: borrar bloque MOCK y descomentar bloque REAL
 //
-// Contrato esperado del backend:
+// Contrato:
 //   POST ${VITE_API_URL}/chat
-//   Body:     { messages: [{role: 'user'|'assistant', content: string}], mode: 'web' }
-//   Response: { response?: string, finished: boolean, beneficios_json?: BeneficiosJSON }
-//
-// Tipo BeneficiosJSON:
-//   {
-//     total_estimado: number,
-//     beneficios: { nombre, descripcion, monto_estimado, tipo }[],
-//     productos_cmf: { nombre, entidad, monto_maximo, tasa_estimada }[],
-//     plan_accion: { paso, descripcion, tiempo_estimado, urgencia }[]
-//   }
+//   Body:     { messages: [{role, content}], mode: 'web' }
+//   Response: { response?, finished, beneficios_json? }
 // ─────────────────────────────────────────────────────────────────────────────
 
-const TOTAL_PASOS_ESTIMADOS = 6
+const TOTAL_PASOS = 6
 
-// Etiquetas de etapa para hacer el progreso más humano
-const ETIQUETAS_PASO = [
-  'Conociendo tu negocio',
-  'Tus ingresos',
-  'Tu ubicación',
-  'Tu equipo',
-  'Tu situación tributaria',
+const ETAPAS = [
+  'Tu negocio',
+  'Ingresos',
+  'Ubicación',
+  'Equipo',
+  'Situación tributaria',
   'Últimos detalles',
 ]
 
@@ -59,30 +41,10 @@ const FLUJO_PREGUNTAS_MOCK = [
 const BENEFICIOS_MOCK = {
   total_estimado: 3240000,
   beneficios: [
-    {
-      nombre: 'Régimen Pro Pyme (14 D)',
-      descripcion: 'Tributación simplificada sobre flujo de caja. Pagas impuestos solo cuando cobras, no cuando facturas.',
-      monto_estimado: 1200000,
-      tipo: 'tributario',
-    },
-    {
-      nombre: 'Crédito Fogape Reactiva',
-      descripcion: 'Garantía estatal del 80% para acceder a crédito bancario a tasa preferencial.',
-      monto_estimado: 8000000,
-      tipo: 'financiero',
-    },
-    {
-      nombre: 'Subsidio Capital de Trabajo Sercotec',
-      descripcion: 'Subsidio no reembolsable de hasta $2.000.000 para micro y pequeñas empresas.',
-      monto_estimado: 2000000,
-      tipo: 'subsidio',
-    },
-    {
-      nombre: 'Deducción de gastos tributarios',
-      descripcion: 'Al formalizar puedes deducir hasta el 100% de tus gastos de operación (arriendos, honorarios, insumos).',
-      monto_estimado: 640000,
-      tipo: 'tributario',
-    },
+    { nombre: 'Régimen Pro Pyme (14 D)', descripcion: 'Tributación simplificada sobre flujo de caja. Pagas impuestos solo cuando cobras, no cuando facturas.', monto_estimado: 1200000, tipo: 'tributario' },
+    { nombre: 'Crédito Fogape Reactiva', descripcion: 'Garantía estatal del 80% para acceder a crédito bancario a tasa preferencial.', monto_estimado: 8000000, tipo: 'financiero' },
+    { nombre: 'Subsidio Capital de Trabajo Sercotec', descripcion: 'Subsidio no reembolsable de hasta $2.000.000 para micro y pequeñas empresas.', monto_estimado: 2000000, tipo: 'subsidio' },
+    { nombre: 'Deducción de gastos tributarios', descripcion: 'Al formalizar puedes deducir hasta el 100% de tus gastos de operación.', monto_estimado: 640000, tipo: 'tributario' },
   ],
   productos_cmf: [
     { nombre: 'Crédito Pyme Express', entidad: 'Banco Estado', monto_maximo: 20000000, tasa_estimada: '0,5% mensual' },
@@ -97,88 +59,85 @@ const BENEFICIOS_MOCK = {
 }
 
 function mockRespuesta(mensajes) {
-  const pasoUsuario = mensajes.filter(m => m.role === 'user').length
-  return new Promise(resolve => {
+  const paso = mensajes.filter(m => m.role === 'user').length
+  return new Promise(resolve =>
     setTimeout(() => {
-      if (pasoUsuario > FLUJO_PREGUNTAS_MOCK.length) {
+      if (paso > FLUJO_PREGUNTAS_MOCK.length) {
         resolve({ finished: true, beneficios_json: BENEFICIOS_MOCK })
       } else {
-        resolve({ finished: false, response: FLUJO_PREGUNTAS_MOCK[pasoUsuario - 1] })
+        resolve({ finished: false, response: FLUJO_PREGUNTAS_MOCK[paso - 1] })
       }
     }, 600 + Math.random() * 400)
-  })
+  )
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// FIN MOCK BACKEND
 // ─────────────────────────────────────────────────────────────────────────────
 
 function mensajeInicial(dolor) {
   const intros = {
-    credito_rechazado:
-      'Hola, soy Meridian. Me contaste que te rechazaron un crédito. Antes de mostrarte cuánto dinero estás dejando sobre la mesa, necesito entender tu situación. ¿Hace cuánto tiempo tienes tu negocio? [OPCIONES: Menos de 1 año | 1 a 3 años | Más de 3 años]',
-    necesito_boleta:
-      'Hola, soy Meridian. Entiendo que te pidieron una boleta y no puedes emitirla. Vamos a ver cuánto te cuesta no estar formalizado. ¿Hace cuánto tiempo llevas en este trabajo? [OPCIONES: Menos de 1 año | 1 a 3 años | Más de 3 años]',
-    quiero_crecer:
-      'Hola, soy Meridian. Hay beneficios del Estado que tu negocio aún no está usando. Vamos a calcular exactamente cuáles son. ¿Hace cuánto tiempo tienes tu negocio? [OPCIONES: Menos de 1 año | 1 a 3 años | Más de 3 años]',
+    credito_rechazado: 'Hola, soy Meridian. Me contaste que te rechazaron un crédito. Antes de mostrarte cuánto dinero estás dejando sobre la mesa, necesito entender tu situación. ¿Hace cuánto tiempo tienes tu negocio? [OPCIONES: Menos de 1 año | 1 a 3 años | Más de 3 años]',
+    necesito_boleta:   'Hola, soy Meridian. Entiendo que te pidieron una boleta y no puedes emitirla. Vamos a ver cuánto te cuesta no estar formalizado. ¿Hace cuánto tiempo llevas en este trabajo? [OPCIONES: Menos de 1 año | 1 a 3 años | Más de 3 años]',
+    quiero_crecer:     'Hola, soy Meridian. Hay beneficios del Estado que tu negocio aún no está usando. Vamos a calcular exactamente cuáles son. ¿Hace cuánto tiempo tienes tu negocio? [OPCIONES: Menos de 1 año | 1 a 3 años | Más de 3 años]',
   }
   return intros[dolor] ?? intros.quiero_crecer
 }
 
-// ─── Paleta ───────────────────────────────────────────────────────────────────
+// ─── Sistema de diseño ────────────────────────────────────────────────────────
 const C = {
-  bg:         '#0E0C09',
-  accent:     '#F5A623',
-  accentFaint:'rgba(245,166,35,0.55)',
-  text:       '#F8F3EB',
-  textFaint:  'rgba(248,243,235,0.28)',
+  bg:          '#FAFAF8',
+  bgWhite:     '#FFFFFF',
+  text:        '#18181B',
+  textMid:     '#52525B',
+  textMuted:   '#71717A',
+  textFaint:   '#A1A1AA',
+  amber:       '#F59E0B',
+  amberDark:   '#D97706',
+  amberBorder: '#FCD34D',
+  border:      '#E4E4E7',
 }
 
-// ─── Icono SVG de flecha atrás ────────────────────────────────────────────────
+const ease = [0.22, 1, 0.36, 1]
+
+// ─── Icono atrás ──────────────────────────────────────────────────────────────
 function IconBack() {
   return (
     <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
-      stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
       <polyline points="15 18 9 12 15 6" />
     </svg>
   )
 }
 
-// ─── Logo Meridian (inline, igual que Entrada.jsx) ────────────────────────────
-function MeridianLogo() {
+// ─── Logo compacto ────────────────────────────────────────────────────────────
+function MeridianLogoCompact() {
   return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
       <div style={{
-        width: '30px',
-        height: '30px',
-        borderRadius: '9px',
-        background: 'linear-gradient(145deg, #F5A623 0%, #FBBF24 100%)',
+        width: '28px',
+        height: '28px',
+        borderRadius: '8px',
+        background: '#18181B',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        boxShadow: '0 0 14px rgba(245,166,35,0.24)',
         flexShrink: 0,
       }}>
         <span style={{
           fontFamily: "'Syne', sans-serif",
-          fontSize: '13px',
+          fontSize: '12px',
           fontWeight: 800,
-          color: '#0E0C09',
+          color: C.amber,
           letterSpacing: '-0.04em',
           lineHeight: 1,
-        }}>
-          M
-        </span>
+        }}>M</span>
       </div>
       <span style={{
         fontFamily: "'Syne', sans-serif",
-        fontSize: '16px',
+        fontSize: '15px',
         fontWeight: 700,
         color: C.text,
-        letterSpacing: '-0.025em',
-      }}>
-        Meridian
-      </span>
+        letterSpacing: '-0.02em',
+      }}>Meridian</span>
     </div>
   )
 }
@@ -193,7 +152,6 @@ export default function Preguntas() {
   })
   const [isLoading, setIsLoading] = useState(false)
 
-  // Inicializa la primera pregunta si no hay historial
   useEffect(() => {
     if (messages.length === 0) {
       const dolor = sessionStorage.getItem('meridian_dolor') ?? 'quiero_crecer'
@@ -201,7 +159,6 @@ export default function Preguntas() {
     }
   }, [])
 
-  // Persiste solo cuando el último mensaje es del asistente
   useEffect(() => {
     const ultimo = messages[messages.length - 1]
     if (messages.length > 0 && ultimo?.role === 'assistant') {
@@ -210,8 +167,8 @@ export default function Preguntas() {
   }, [messages])
 
   const pasoActual = messages.filter(m => m.role === 'user').length
-  const progreso = Math.min(pasoActual / TOTAL_PASOS_ESTIMADOS, 1)
-  const etiquetaPaso = ETIQUETAS_PASO[pasoActual] ?? 'Finalizando…'
+  const progreso = Math.min(pasoActual / TOTAL_PASOS, 1)
+  const etapa = pasoActual < ETAPAS.length ? ETAPAS[pasoActual] : 'Finalizando…'
 
   async function handleSend(respuesta) {
     const nuevosMensajes = [...messages, { role: 'user', content: respuesta }]
@@ -219,11 +176,11 @@ export default function Preguntas() {
     setIsLoading(true)
 
     try {
-      // ── MODO MOCK ─────────────────────────────────────────────────────────
+      // ── MODO MOCK ──────────────────────────────────────────────────────────
       const data = await mockRespuesta(nuevosMensajes)
-      // ── FIN MODO MOCK ─────────────────────────────────────────────────────
+      // ── FIN MODO MOCK ──────────────────────────────────────────────────────
 
-      // ── MODO REAL (descomentar al conectar el backend) ────────────────────
+      // ── MODO REAL (descomentar al conectar el backend) ─────────────────────
       // const res = await fetch(`${import.meta.env.VITE_API_URL}/chat`, {
       //   method: 'POST',
       //   headers: { 'Content-Type': 'application/json' },
@@ -231,7 +188,7 @@ export default function Preguntas() {
       // })
       // if (!res.ok) throw new Error(`Error ${res.status}: ${await res.text()}`)
       // const data = await res.json()
-      // ── FIN MODO REAL ─────────────────────────────────────────────────────
+      // ── FIN MODO REAL ──────────────────────────────────────────────────────
 
       if (data.finished) {
         sessionStorage.setItem('meridian_beneficios', JSON.stringify(data.beneficios_json))
@@ -254,68 +211,66 @@ export default function Preguntas() {
       background: C.bg,
       display: 'flex',
       flexDirection: 'column',
-      position: 'relative',
-      overflow: 'hidden',
     }}>
-
-      {/* Fondos ambientales cálidos */}
       <div style={{
-        position: 'absolute',
-        inset: 0,
-        background: [
-          'radial-gradient(ellipse 80% 50% at 10% -20%, rgba(245,130,15,0.14) 0%, transparent 58%)',
-          'radial-gradient(ellipse 60% 40% at 90% 105%, rgba(190,100,10,0.08) 0%, transparent 50%)',
-        ].join(', '),
-        pointerEvents: 'none',
-      }} />
-
-      <div style={{
-        maxWidth: '560px',
+        maxWidth: '600px',
         width: '100%',
         margin: '0 auto',
         padding: '0 24px',
         display: 'flex',
         flexDirection: 'column',
         height: '100%',
-        position: 'relative',
       }}>
 
-        {/* Header: navegación + logo + progreso */}
-        <div style={{ paddingTop: '22px', paddingBottom: '18px', flexShrink: 0 }}>
-
-          {/* Fila superior: botón volver + logo */}
+        {/* ── Header ── */}
+        <header style={{
+          flexShrink: 0,
+          paddingTop: '20px',
+          paddingBottom: '16px',
+          borderBottom: `1px solid ${C.border}`,
+          marginBottom: '20px',
+        }}>
+          {/* Fila logo + botón volver */}
           <div style={{
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
-            marginBottom: '20px',
+            marginBottom: '16px',
           }}>
             <button
               onClick={() => navigate('/')}
               style={{
                 display: 'flex',
                 alignItems: 'center',
-                gap: '5px',
+                gap: '4px',
                 background: 'transparent',
-                border: 'none',
+                border: `1px solid ${C.border}`,
+                borderRadius: '8px',
+                padding: '6px 12px 6px 8px',
                 cursor: 'pointer',
-                color: C.textFaint,
+                color: C.textMid,
                 fontFamily: "'DM Sans', sans-serif",
                 fontSize: '13px',
-                padding: '6px 0',
-                transition: 'color 0.2s',
+                fontWeight: 500,
+                transition: 'border-color 0.15s, color 0.15s',
               }}
-              onMouseEnter={e => e.currentTarget.style.color = C.text}
-              onMouseLeave={e => e.currentTarget.style.color = C.textFaint}
+              onMouseEnter={e => {
+                e.currentTarget.style.borderColor = C.amberBorder
+                e.currentTarget.style.color = C.amberDark
+              }}
+              onMouseLeave={e => {
+                e.currentTarget.style.borderColor = C.border
+                e.currentTarget.style.color = C.textMid
+              }}
             >
               <IconBack />
-              <span>Volver</span>
+              Volver
             </button>
 
-            <MeridianLogo />
+            <MeridianLogoCompact />
           </div>
 
-          {/* Barra de progreso con etiqueta de etapa */}
+          {/* Progreso */}
           <div>
             <div style={{
               display: 'flex',
@@ -326,44 +281,72 @@ export default function Preguntas() {
               <span style={{
                 fontFamily: "'DM Sans', sans-serif",
                 fontSize: '12px',
-                color: C.textFaint,
-                letterSpacing: '0.01em',
+                fontWeight: 500,
+                color: C.textMuted,
               }}>
-                {pasoActual > 0 ? etiquetaPaso : 'Comenzando tu perfil…'}
+                {pasoActual > 0 ? etapa : 'Comenzando…'}
               </span>
               <span style={{
-                fontFamily: "'Syne', sans-serif",
+                fontFamily: "'DM Sans', sans-serif",
                 fontSize: '12px',
-                fontWeight: 700,
-                color: C.accentFaint,
+                fontWeight: 600,
+                color: pasoActual > 0 ? C.amberDark : C.textFaint,
               }}>
-                {pasoActual}/{TOTAL_PASOS_ESTIMADOS}
+                {pasoActual > 0 ? `${pasoActual} de ${TOTAL_PASOS}` : ''}
               </span>
             </div>
 
-            {/* Barra de progreso animada */}
+            {/* Barra de progreso */}
             <div style={{
-              height: '3px',
-              background: 'rgba(255,255,255,0.06)',
+              height: '4px',
+              background: '#E4E4E7',
               borderRadius: '100px',
               overflow: 'hidden',
             }}>
               <motion.div
                 animate={{ width: `${progreso * 100}%` }}
-                transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
+                transition={{ duration: 0.5, ease }}
                 style={{
                   height: '100%',
-                  background: 'linear-gradient(to right, rgba(245,166,35,0.55), #F5A623)',
+                  background: progreso > 0
+                    ? `linear-gradient(to right, #F59E0B, #D97706)`
+                    : 'transparent',
                   borderRadius: '100px',
-                  minWidth: progreso > 0 ? '10px' : '0px',
-                  boxShadow: progreso > 0 ? '0 0 8px rgba(245,166,35,0.4)' : 'none',
+                  minWidth: progreso > 0 ? '8px' : '0px',
                 }}
               />
             </div>
-          </div>
-        </div>
 
-        {/* Flujo conversacional — ocupa el espacio restante */}
+            {/* Indicadores de paso */}
+            {pasoActual > 0 && (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 0.3 }}
+                style={{
+                  display: 'flex',
+                  gap: '4px',
+                  marginTop: '8px',
+                }}
+              >
+                {Array.from({ length: TOTAL_PASOS }).map((_, i) => (
+                  <div
+                    key={i}
+                    style={{
+                      height: '3px',
+                      flex: 1,
+                      borderRadius: '100px',
+                      background: i < pasoActual ? C.amber : '#E4E4E7',
+                      transition: 'background 0.3s',
+                    }}
+                  />
+                ))}
+              </motion.div>
+            )}
+          </div>
+        </header>
+
+        {/* ── Área de conversación ── */}
         <div style={{ flex: 1, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
           <PreguntasFlow
             messages={messages}
@@ -372,7 +355,8 @@ export default function Preguntas() {
           />
         </div>
 
-        <div style={{ height: '24px', flexShrink: 0 }} />
+        {/* Espacio inferior */}
+        <div style={{ height: '20px', flexShrink: 0 }} />
       </div>
     </div>
   )

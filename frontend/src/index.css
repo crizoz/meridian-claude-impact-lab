@@ -2,40 +2,41 @@
 @tailwind components;
 @tailwind utilities;
 
-/* ─── Rendering de fuentes ──────────────────────────────────────────────────── */
-* {
+/* ─── Base ───────────────────────────────────────────────────────────────────── */
+*, *::before, *::after {
+  box-sizing: border-box;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  box-sizing: border-box;
 }
 
-/* ─── Color de selección de texto ───────────────────────────────────────────── */
+html, body, #root {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  background: #FAFAF8;
+}
+
+body {
+  font-family: 'DM Sans', sans-serif;
+  color: #18181B;
+}
+
+/* ─── Selección de texto ─────────────────────────────────────────────────────── */
 ::selection {
-  background: rgba(245, 166, 35, 0.28);
-  color: #F8F3EB;
+  background: rgba(245, 158, 11, 0.20);
+  color: #18181B;
 }
 
-/* ─── Placeholder del input de texto libre en PreguntasFlow ─────────────────── */
+/* ─── Placeholder del input ──────────────────────────────────────────────────── */
 .meridian-input::placeholder {
-  color: rgba(248, 243, 235, 0.25);
+  color: #A1A1AA;
 }
 
-/* ─── Scrollbar del área de mensajes (webkit) ───────────────────────────────── */
-.meridian-messages::-webkit-scrollbar {
-  width: 4px;
-}
-.meridian-messages::-webkit-scrollbar-track {
-  background: transparent;
-}
-.meridian-messages::-webkit-scrollbar-thumb {
-  background: rgba(245, 166, 35, 0.15);
-  border-radius: 100px;
-}
-.meridian-messages::-webkit-scrollbar-thumb:hover {
-  background: rgba(245, 166, 35, 0.28);
+.meridian-input:focus {
+  outline: none;
 }
 
-/* ─── Scrollbar global mínima ────────────────────────────────────────────────── */
+/* ─── Scrollbar del chat ─────────────────────────────────────────────────────── */
 ::-webkit-scrollbar {
   width: 4px;
 }
@@ -43,16 +44,19 @@
   background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.08);
+  background: #D4D4D8;
   border-radius: 100px;
 }
+::-webkit-scrollbar-thumb:hover {
+  background: #A1A1AA;
+}
 
-/* ─── Reset de botones ───────────────────────────────────────────────────────── */
+/* ─── Botones: quitar highlight táctil en móvil ──────────────────────────────── */
 button {
   -webkit-tap-highlight-color: transparent;
 }
 
-/* ─── Transiciones de página ─────────────────────────────────────────────────── */
+/* ─── Suavizado de transiciones de página ────────────────────────────────────── */
 html {
   scroll-behavior: smooth;
 }

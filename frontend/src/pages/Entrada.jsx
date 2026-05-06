@@ -1,31 +1,31 @@
 // frontend/src/pages/Entrada.jsx
-// Meridian — Landing page · Diseño cálido y acogedor
-// Fuentes en index.html:
-// <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+// Meridian — Landing page · Diseño blanco, profesional y cálido
 
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion, useMotionValue, animate } from 'framer-motion'
 
-// ─── Paleta Meridian ──────────────────────────────────────────────────────────
+// ─── Sistema de diseño ────────────────────────────────────────────────────────
 const C = {
-  bg:           '#0E0C09',
-  accent:       '#F5A623',
-  accentMid:    'rgba(245,166,35,0.65)',
-  accentDim:    'rgba(245,166,35,0.09)',
-  accentBorder: 'rgba(245,166,35,0.16)',
-  accentHover:  'rgba(245,166,35,0.07)',
-  text:         '#F8F3EB',
-  textMid:      'rgba(248,243,235,0.54)',
-  textFaint:    'rgba(248,243,235,0.28)',
-  cardBg:       'rgba(255,248,230,0.034)',
-  cardHoverBg:  'rgba(245,166,35,0.065)',
-  cardBorder:   'rgba(245,166,35,0.13)',
-  cardHoverBorder: 'rgba(245,166,35,0.30)',
+  bg:           '#FAFAF8',
+  bgWhite:      '#FFFFFF',
+  bgAmber:      '#FFFBEB',
+  text:         '#18181B',
+  textMid:      '#52525B',
+  textMuted:    '#71717A',
+  textFaint:    '#A1A1AA',
+  amber:        '#F59E0B',
+  amberDark:    '#D97706',
+  amberBorder:  '#FCD34D',
+  amberLight:   '#FEF3C7',
+  border:       '#E4E4E7',
+  borderMid:    '#D4D4D8',
 }
 
+const ease = [0.22, 1, 0.36, 1]
+
 // ─── Número animado ───────────────────────────────────────────────────────────
-function AnimatedNumber({ target, duration = 2.2 }) {
+function AnimatedNumber({ target, duration = 2 }) {
   const count = useMotionValue(0)
   const [display, setDisplay] = useState('0')
 
@@ -41,11 +41,11 @@ function AnimatedNumber({ target, duration = 2.2 }) {
   return <span>{display}</span>
 }
 
-// ─── Iconos SVG (sin emoji) ───────────────────────────────────────────────────
+// ─── Iconos SVG ───────────────────────────────────────────────────────────────
 function IconCredit() {
   return (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
-      stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none"
+      stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
       <rect x="1" y="7" width="22" height="14" rx="2.5" />
       <path d="M1 11h22" />
       <path d="M12 3L22 7H2L12 3Z" />
@@ -55,8 +55,8 @@ function IconCredit() {
 
 function IconReceipt() {
   return (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
-      stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none"
+      stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
       <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
       <polyline points="14 2 14 8 20 8" />
       <line x1="8" y1="13" x2="16" y2="13" />
@@ -67,65 +67,109 @@ function IconReceipt() {
 
 function IconGrowth() {
   return (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
-      stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none"
+      stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
       <polyline points="22 7 13.5 15.5 8.5 10.5 2 17" />
       <polyline points="16 7 22 7 22 13" />
     </svg>
   )
 }
 
-// ─── Logo Meridian ────────────────────────────────────────────────────────────
+function IconArrow() {
+  return (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+      stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+      <line x1="5" y1="12" x2="19" y2="12" />
+      <polyline points="12 5 19 12 12 19" />
+    </svg>
+  )
+}
+
+function IconCheck() {
+  return (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+      stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+      <polyline points="20 6 9 17 4 12" />
+    </svg>
+  )
+}
+
+// ─── Logo ─────────────────────────────────────────────────────────────────────
 function MeridianLogo() {
   return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: '11px' }}>
+    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
       <div style={{
-        width: '32px',
-        height: '32px',
+        width: '34px',
+        height: '34px',
         borderRadius: '10px',
-        background: 'linear-gradient(145deg, #F5A623 0%, #FBBF24 100%)',
+        background: '#18181B',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        boxShadow: '0 0 18px rgba(245,166,35,0.30)',
         flexShrink: 0,
       }}>
         <span style={{
           fontFamily: "'Syne', sans-serif",
-          fontSize: '15px',
+          fontSize: '16px',
           fontWeight: 800,
-          color: '#0E0C09',
-          letterSpacing: '-0.05em',
+          color: C.amber,
+          letterSpacing: '-0.04em',
           lineHeight: 1,
-        }}>
-          M
-        </span>
+        }}>M</span>
       </div>
       <div>
-        <span style={{
+        <p style={{
           fontFamily: "'Syne', sans-serif",
           fontSize: '17px',
           fontWeight: 700,
           color: C.text,
-          letterSpacing: '-0.025em',
-          display: 'block',
+          margin: 0,
           lineHeight: 1.1,
-        }}>
-          Meridian
-        </span>
-        <span style={{
+          letterSpacing: '-0.02em',
+        }}>Meridian</p>
+        <p style={{
           fontFamily: "'DM Sans', sans-serif",
           fontSize: '11px',
+          fontWeight: 500,
           color: C.textFaint,
-          letterSpacing: '0.02em',
-          display: 'block',
+          margin: 0,
           lineHeight: 1,
           marginTop: '2px',
-        }}>
-          Asesor financiero IA
-        </span>
+        }}>Asesor financiero IA</p>
       </div>
     </div>
+  )
+}
+
+// ─── Stat item ────────────────────────────────────────────────────────────────
+function StatItem({ numero, label, animated, delay }) {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay, duration: 0.45, ease }}
+      style={{ textAlign: 'center', flex: 1 }}
+    >
+      <p style={{
+        fontFamily: "'Syne', sans-serif",
+        fontSize: 'clamp(22px, 5vw, 28px)',
+        fontWeight: 800,
+        color: C.text,
+        margin: '0 0 4px',
+        letterSpacing: '-0.03em',
+        lineHeight: 1,
+      }}>
+        {animated ? <AnimatedNumber target={numero} duration={1.8} /> : numero.toLocaleString('es-CL')}
+      </p>
+      <p style={{
+        fontFamily: "'DM Sans', sans-serif",
+        fontSize: '12px',
+        fontWeight: 500,
+        color: C.textMuted,
+        margin: 0,
+        lineHeight: 1.4,
+      }}>{label}</p>
+    </motion.div>
   )
 }
 
@@ -135,120 +179,89 @@ function PainCard({ icon, titulo, descripcion, onClick, delay }) {
 
   return (
     <motion.button
-      initial={{ opacity: 0, y: 20 }}
+      initial={{ opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ delay, duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-      whileTap={{ scale: 0.985 }}
+      transition={{ delay, duration: 0.45, ease }}
+      whileTap={{ scale: 0.99 }}
       onClick={onClick}
       onHoverStart={() => setHovered(true)}
       onHoverEnd={() => setHovered(false)}
       style={{
-        background: hovered ? C.cardHoverBg : C.cardBg,
-        border: `1px solid ${hovered ? C.cardHoverBorder : C.cardBorder}`,
-        borderRadius: '20px',
+        width: '100%',
+        background: C.bgWhite,
+        border: `1.5px solid ${hovered ? C.amberBorder : C.border}`,
+        borderRadius: '16px',
         padding: '22px 22px 20px',
         textAlign: 'left',
         cursor: 'pointer',
-        width: '100%',
-        transition: 'background 0.22s, border-color 0.22s, transform 0.22s, box-shadow 0.22s',
+        boxShadow: hovered
+          ? '0 8px 24px rgba(245,158,11,0.10), 0 2px 6px rgba(0,0,0,0.05)'
+          : '0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04)',
+        transition: 'border-color 0.2s, box-shadow 0.2s, transform 0.2s',
         transform: hovered ? 'translateY(-2px)' : 'translateY(0)',
-        boxShadow: hovered ? '0 8px 32px rgba(0,0,0,0.25)' : 'none',
+        display: 'flex',
+        gap: '16px',
+        alignItems: 'flex-start',
       }}
     >
-      {/* Contenedor del icono */}
+      {/* Icono */}
       <div style={{
         width: '44px',
         height: '44px',
-        borderRadius: '13px',
-        background: hovered ? 'rgba(245,166,35,0.15)' : 'rgba(245,166,35,0.08)',
+        borderRadius: '12px',
+        background: hovered ? C.amberLight : '#F4F4F5',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        marginBottom: '14px',
-        color: C.accent,
-        transition: 'background 0.22s',
+        flexShrink: 0,
+        color: hovered ? C.amberDark : C.textMuted,
+        transition: 'background 0.2s, color 0.2s',
+        marginTop: '2px',
       }}>
         {icon}
       </div>
 
-      <p style={{
-        fontFamily: "'Syne', sans-serif",
-        fontSize: '16px',
-        fontWeight: 700,
-        color: C.text,
-        margin: '0 0 7px',
-        lineHeight: 1.3,
-        letterSpacing: '-0.01em',
-      }}>
-        {titulo}
-      </p>
+      {/* Texto */}
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <p style={{
+          fontFamily: "'Syne', sans-serif",
+          fontSize: '16px',
+          fontWeight: 700,
+          color: C.text,
+          margin: '0 0 6px',
+          lineHeight: 1.3,
+          letterSpacing: '-0.01em',
+        }}>{titulo}</p>
 
-      <p style={{
-        fontFamily: "'DM Sans', sans-serif",
-        fontSize: '14px',
-        color: C.textMid,
-        margin: '0 0 16px',
-        lineHeight: 1.7,
-      }}>
-        {descripcion}
-      </p>
+        <p style={{
+          fontFamily: "'DM Sans', sans-serif",
+          fontSize: '14px',
+          color: C.textMuted,
+          margin: '0 0 14px',
+          lineHeight: 1.65,
+        }}>{descripcion}</p>
 
-      <div style={{
-        display: 'flex',
-        alignItems: 'center',
-        gap: '5px',
-        color: hovered ? C.accent : C.accentMid,
-        fontFamily: "'DM Sans', sans-serif",
-        fontSize: '13px',
-        fontWeight: 600,
-        transition: 'color 0.2s',
-      }}>
-        <span>Calcular mis beneficios</span>
-        <motion.span
-          animate={{ x: hovered ? 4 : 0 }}
-          transition={{ duration: 0.2, ease: 'easeOut' }}
-          style={{ display: 'inline-block' }}
-        >
-          →
-        </motion.span>
+        <div style={{
+          display: 'inline-flex',
+          alignItems: 'center',
+          gap: '5px',
+          fontFamily: "'DM Sans', sans-serif",
+          fontSize: '13px',
+          fontWeight: 600,
+          color: hovered ? C.amberDark : C.textMid,
+          transition: 'color 0.2s',
+        }}>
+          <span>Calcular mis beneficios</span>
+          <motion.span
+            animate={{ x: hovered ? 4 : 0 }}
+            transition={{ duration: 0.18 }}
+            style={{ display: 'flex', alignItems: 'center' }}
+          >
+            <IconArrow />
+          </motion.span>
+        </div>
       </div>
     </motion.button>
-  )
-}
-
-// ─── Chip de estadística ──────────────────────────────────────────────────────
-function StatChip({ valor, label, delay }) {
-  return (
-    <motion.div
-      initial={{ opacity: 0, scale: 0.9 }}
-      animate={{ opacity: 1, scale: 1 }}
-      transition={{ delay, duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
-      style={{
-        background: C.accentDim,
-        border: `1px solid ${C.accentBorder}`,
-        borderRadius: '100px',
-        padding: '8px 16px',
-        display: 'flex',
-        alignItems: 'center',
-        gap: '8px',
-      }}
-    >
-      <span style={{
-        fontFamily: "'Syne', sans-serif",
-        fontSize: '14px',
-        fontWeight: 700,
-        color: C.accent,
-      }}>
-        {valor}
-      </span>
-      <span style={{
-        fontFamily: "'DM Sans', sans-serif",
-        fontSize: '13px',
-        color: C.textMid,
-      }}>
-        {label}
-      </span>
-    </motion.div>
   )
 }
 
@@ -273,182 +286,216 @@ export default function Entrada() {
       titulo: 'Me rechazaron un crédito',
       descripcion: 'Sin RUT tributario activo, ningún banco puede evaluarte aunque tu negocio funcione bien.',
       dolor: 'credito_rechazado',
-      delay: 0.62,
+      delay: 0.55,
     },
     {
       icon: <IconReceipt />,
       titulo: 'Me pidieron boleta',
       descripcion: 'Mercado Libre, un cliente grande o el municipio — el muro siempre es el mismo.',
       dolor: 'necesito_boleta',
-      delay: 0.72,
+      delay: 0.63,
     },
     {
       icon: <IconGrowth />,
       titulo: 'Quiero hacer crecer mi negocio',
-      descripcion: 'Hay beneficios estatales, créditos Fogape y programas Corfo que no estás usando.',
+      descripcion: 'Hay beneficios estatales, créditos Fogape y programas Corfo que aún no estás usando.',
       dolor: 'quiero_crecer',
-      delay: 0.82,
+      delay: 0.71,
     },
   ]
+
+  const trustItems = ['5 minutos', 'Completamente gratis', 'Sin crear cuenta']
 
   return (
     <div style={{
       minHeight: '100svh',
       background: C.bg,
-      position: 'relative',
-      overflow: 'hidden',
     }}>
-
-      {/* Fondos ambientales cálidos en capas */}
       <div style={{
-        position: 'absolute',
-        inset: 0,
-        background: [
-          'radial-gradient(ellipse 95% 65% at 8% -25%, rgba(245,130,15,0.20) 0%, transparent 58%)',
-          'radial-gradient(ellipse 65% 45% at 92% 110%, rgba(190,100,10,0.11) 0%, transparent 52%)',
-        ].join(', '),
-        pointerEvents: 'none',
-      }} />
-
-      {/* Línea vertical decorativa */}
-      <div style={{
-        position: 'absolute',
-        top: 0,
-        right: '18%',
-        width: '1px',
-        height: '100%',
-        background: 'linear-gradient(to bottom, rgba(245,166,35,0.13), transparent 52%)',
-        pointerEvents: 'none',
-      }} />
-
-      <div style={{
-        maxWidth: '560px',
+        maxWidth: '600px',
         margin: '0 auto',
-        padding: '0 24px 96px',
-        position: 'relative',
+        padding: '0 24px 80px',
       }}>
 
-        {/* Header: logo */}
-        <motion.div
-          initial={{ opacity: 0, y: -8 }}
+        {/* ── Header ── */}
+        <motion.header
+          initial={{ opacity: 0, y: -6 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
-          style={{ paddingTop: '44px', paddingBottom: '52px' }}
+          transition={{ duration: 0.4, ease }}
+          style={{
+            paddingTop: '32px',
+            paddingBottom: '56px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+          }}
         >
           <MeridianLogo />
-        </motion.div>
+        </motion.header>
 
-        {/* Saludo humano — primera línea de contacto */}
-        <motion.p
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.08, duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-          style={{
-            fontFamily: "'DM Sans', sans-serif",
-            fontSize: '15px',
-            color: C.textMid,
-            margin: '0 0 22px',
-            lineHeight: 1.7,
-            maxWidth: '400px',
-          }}
-        >
-          Hola. En 5 minutos calculamos qué beneficios y créditos del Estado te corresponden — en números reales.
-        </motion.p>
+        {/* ── Hero ── */}
+        <section style={{ marginBottom: '52px' }}>
+          {/* Badge */}
+          <motion.div
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.05, duration: 0.4, ease }}
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '7px',
+              background: C.amberLight,
+              border: `1px solid ${C.amberBorder}`,
+              borderRadius: '100px',
+              padding: '6px 14px',
+              marginBottom: '24px',
+            }}
+          >
+            <div style={{
+              width: '6px',
+              height: '6px',
+              borderRadius: '50%',
+              background: C.amber,
+              flexShrink: 0,
+            }} />
+            <span style={{
+              fontFamily: "'DM Sans', sans-serif",
+              fontSize: '12px',
+              fontWeight: 600,
+              color: C.amberDark,
+              letterSpacing: '0.01em',
+            }}>
+              Chile · Microemprendedores
+            </span>
+          </motion.div>
 
-        {/* Hero: el número grande */}
-        <motion.div
-          initial={{ opacity: 0, y: 18 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.18, duration: 0.65, ease: [0.22, 1, 0.36, 1] }}
-          style={{ marginBottom: '12px' }}
-        >
-          <div style={{
-            fontFamily: "'Syne', sans-serif",
-            fontSize: 'clamp(52px, 13vw, 82px)',
-            fontWeight: 800,
-            color: C.text,
-            lineHeight: 1,
-            letterSpacing: '-0.04em',
-          }}>
-            <AnimatedNumber target={1800000} duration={2.2} />
-          </div>
-        </motion.div>
+          {/* Headline */}
+          <motion.h1
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.12, duration: 0.5, ease }}
+            style={{
+              fontFamily: "'Syne', sans-serif",
+              fontSize: 'clamp(36px, 9vw, 52px)',
+              fontWeight: 800,
+              color: C.text,
+              lineHeight: 1.08,
+              letterSpacing: '-0.03em',
+              margin: '0 0 20px',
+            }}
+          >
+            Descubre lo que<br />
+            <span style={{ color: C.amberDark }}>tu negocio merece</span>
+          </motion.h1>
 
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.30, duration: 0.5 }}
-          style={{ marginBottom: '44px' }}
-        >
-          <p style={{
-            fontFamily: "'Syne', sans-serif",
-            fontSize: 'clamp(18px, 4.5vw, 23px)',
-            fontWeight: 700,
-            color: C.accent,
-            margin: '0 0 14px',
-            lineHeight: 1.25,
-            letterSpacing: '-0.015em',
-          }}>
-            microemprendedores en Chile
-          </p>
-          <p style={{
-            fontFamily: "'DM Sans', sans-serif",
-            fontSize: '15px',
-            color: C.textMid,
-            margin: 0,
-            lineHeight: 1.75,
-            maxWidth: '390px',
-          }}>
-            Sin acceso a crédito. Sin beneficios del Estado. No porque no lo merezcan —
-            sino porque nadie les mostró en números qué ganarían al formalizarse.
-          </p>
-        </motion.div>
+          {/* Subtítulo */}
+          <motion.p
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.22, duration: 0.45, ease }}
+            style={{
+              fontFamily: "'DM Sans', sans-serif",
+              fontSize: '17px',
+              color: C.textMid,
+              lineHeight: 1.7,
+              margin: '0 0 36px',
+              maxWidth: '480px',
+            }}
+          >
+            En Chile, más de 1.800.000 microemprendedores no conocen los
+            beneficios del Estado que les corresponden. En 5 minutos calculamos
+            cuánto dinero está esperándote — en números reales.
+          </motion.p>
 
-        {/* Estadísticas en tiempo real */}
+          {/* Stats row */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.32, duration: 0.4 }}
+            style={{
+              display: 'flex',
+              gap: '0',
+              background: C.bgWhite,
+              border: `1px solid ${C.border}`,
+              borderRadius: '14px',
+              overflow: 'hidden',
+              boxShadow: '0 1px 3px rgba(0,0,0,0.05)',
+            }}
+          >
+            {[
+              { numero: stats.total_perfiles, label: 'Perfiles\ncalculados', animated: true },
+              { numero: stats.total_planes_enviados, label: 'Planes\nenviados', animated: true },
+              { numero: 15, label: 'Regiones\nen Chile', animated: false },
+            ].map((s, i) => (
+              <div key={i} style={{
+                flex: 1,
+                padding: '18px 12px',
+                borderRight: i < 2 ? `1px solid ${C.border}` : 'none',
+                textAlign: 'center',
+              }}>
+                <p style={{
+                  fontFamily: "'Syne', sans-serif",
+                  fontSize: 'clamp(20px, 5vw, 26px)',
+                  fontWeight: 800,
+                  color: C.text,
+                  margin: '0 0 4px',
+                  letterSpacing: '-0.03em',
+                  lineHeight: 1,
+                }}>
+                  {s.animated
+                    ? <AnimatedNumber target={s.numero} duration={1.6} />
+                    : s.numero.toLocaleString('es-CL')
+                  }
+                </p>
+                <p style={{
+                  fontFamily: "'DM Sans', sans-serif",
+                  fontSize: '12px',
+                  fontWeight: 500,
+                  color: C.textMuted,
+                  margin: 0,
+                  lineHeight: 1.35,
+                  whiteSpace: 'pre-line',
+                }}>{s.label}</p>
+              </div>
+            ))}
+          </motion.div>
+        </section>
+
+        {/* ── Separador ── */}
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          transition={{ delay: 0.44, duration: 0.5 }}
+          transition={{ delay: 0.42, duration: 0.3 }}
           style={{
             display: 'flex',
-            flexWrap: 'wrap',
-            gap: '8px',
-            marginBottom: '52px',
+            alignItems: 'center',
+            gap: '16px',
+            marginBottom: '20px',
           }}
         >
-          <StatChip
-            valor={stats.total_perfiles.toLocaleString('es-CL')}
-            label="perfiles calculados"
-            delay={0.44}
-          />
-          <StatChip
-            valor={stats.total_planes_enviados.toLocaleString('es-CL')}
-            label="planes enviados"
-            delay={0.50}
-          />
-          <StatChip valor="15" label="regiones" delay={0.56} />
-        </motion.div>
-
-        {/* Etiqueta de selección */}
-        <motion.p
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.56, duration: 0.4 }}
-          style={{
+          <div style={{ flex: 1, height: '1px', background: C.border }} />
+          <p style={{
             fontFamily: "'DM Sans', sans-serif",
             fontSize: '12px',
             fontWeight: 600,
             color: C.textFaint,
+            margin: 0,
+            letterSpacing: '0.08em',
             textTransform: 'uppercase',
-            letterSpacing: '0.10em',
-            margin: '0 0 14px',
-          }}
-        >
-          ¿Cuál es tu situación hoy?
-        </motion.p>
+            whiteSpace: 'nowrap',
+          }}>
+            ¿Cuál es tu situación hoy?
+          </p>
+          <div style={{ flex: 1, height: '1px', background: C.border }} />
+        </motion.div>
 
-        {/* Cards de puntos de dolor */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+        {/* ── Cards de dolor ── */}
+        <section style={{
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '10px',
+          marginBottom: '32px',
+        }}>
           {pains.map(p => (
             <PainCard
               key={p.dolor}
@@ -459,61 +506,84 @@ export default function Entrada() {
               delay={p.delay}
             />
           ))}
-        </div>
+        </section>
 
-        {/* Indicador de fricción cero */}
+        {/* ── Trust strip ── */}
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          transition={{ delay: 1.05, duration: 0.5 }}
+          transition={{ delay: 0.85, duration: 0.4 }}
           style={{
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            gap: '0',
-            marginTop: '28px',
+            flexWrap: 'wrap',
+            gap: '8px 20px',
+            marginBottom: '48px',
           }}
         >
-          {['5 minutos', 'Gratis', 'Sin registro'].map((item, i) => (
-            <div key={item} style={{ display: 'flex', alignItems: 'center' }}>
+          {trustItems.map(item => (
+            <div key={item} style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px',
+            }}>
+              <div style={{
+                width: '18px',
+                height: '18px',
+                borderRadius: '50%',
+                background: C.amberLight,
+                border: `1px solid ${C.amberBorder}`,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                color: C.amberDark,
+                flexShrink: 0,
+              }}>
+                <IconCheck />
+              </div>
               <span style={{
                 fontFamily: "'DM Sans', sans-serif",
-                fontSize: '12px',
-                color: C.textFaint,
-              }}>
-                {item}
-              </span>
-              {i < 2 && (
-                <div style={{
-                  width: '3px',
-                  height: '3px',
-                  borderRadius: '50%',
-                  background: C.textFaint,
-                  margin: '0 14px',
-                }} />
-              )}
+                fontSize: '13px',
+                fontWeight: 500,
+                color: C.textMid,
+              }}>{item}</span>
             </div>
           ))}
         </motion.div>
 
-        {/* Footer */}
-        <motion.p
+        {/* ── Footer ── */}
+        <motion.footer
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          transition={{ delay: 1.15, duration: 0.5 }}
+          transition={{ delay: 0.95, duration: 0.4 }}
           style={{
-            fontFamily: "'DM Sans', sans-serif",
-            fontSize: '11px',
-            color: 'rgba(248,243,235,0.18)',
-            textAlign: 'center',
-            marginTop: '44px',
-            lineHeight: 1.7,
+            borderTop: `1px solid ${C.border}`,
+            paddingTop: '28px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            flexWrap: 'wrap',
+            gap: '8px',
           }}
         >
-          Meridian no almacena datos personales sin tu consentimiento.
-          <br />
-          Construido en Claude Impact Lab Chile 2026.
-        </motion.p>
+          <p style={{
+            fontFamily: "'DM Sans', sans-serif",
+            fontSize: '12px',
+            color: C.textFaint,
+            margin: 0,
+          }}>
+            Meridian no almacena datos personales sin tu consentimiento.
+          </p>
+          <p style={{
+            fontFamily: "'DM Sans', sans-serif",
+            fontSize: '12px',
+            color: C.textFaint,
+            margin: 0,
+          }}>
+            Claude Impact Lab Chile 2026
+          </p>
+        </motion.footer>
 
       </div>
     </div>

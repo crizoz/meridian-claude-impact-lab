@@ -1,25 +1,34 @@
-// PreguntasFlow — UI del flujo conversacional
+// PreguntasFlow — UI del flujo conversacional sobre fondo blanco
 //
 // Props:
 //   messages:  [{role: 'user'|'assistant', content: string}]
 //   onSend:    (respuesta: string) => void
-//   isLoading: boolean — true mientras Claude está procesando
+//   isLoading: boolean
 
 import { useEffect, useRef, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 
-// ─── Paleta Meridian ──────────────────────────────────────────────────────────
+// ─── Sistema de diseño ────────────────────────────────────────────────────────
 const C = {
-  accent:       '#F5A623',
-  accentDim:    'rgba(245,166,35,0.09)',
-  accentBorder: 'rgba(245,166,35,0.22)',
-  text:         '#F8F3EB',
-  textMid:      'rgba(248,243,235,0.54)',
-  userBg:       'rgba(245,166,35,0.10)',
-  userBorder:   'rgba(245,166,35,0.24)',
-  asstBg:       'rgba(255,248,230,0.05)',
-  asstBorder:   'rgba(255,248,230,0.09)',
+  bg:          '#FAFAF8',
+  bgWhite:     '#FFFFFF',
+  text:        '#18181B',
+  textMid:     '#52525B',
+  textMuted:   '#71717A',
+  textFaint:   '#A1A1AA',
+  amber:       '#F59E0B',
+  amberDark:   '#D97706',
+  amberBorder: '#FCD34D',
+  amberLight:  '#FEF3C7',
+  border:      '#E4E4E7',
+  // Burbujas
+  asstBg:      '#F4F4F5',   // gris claro para Meridian
+  asstText:    '#18181B',
+  userBg:      '#18181B',   // oscuro para el usuario
+  userText:    '#FFFFFF',
 }
+
+const ease = [0.22, 1, 0.36, 1]
 
 // ─── Avatar de Meridian ───────────────────────────────────────────────────────
 function MeridianAvatar() {
@@ -28,25 +37,22 @@ function MeridianAvatar() {
       width: '30px',
       height: '30px',
       borderRadius: '9px',
-      background: 'linear-gradient(145deg, #F5A623 0%, #FBBF24 100%)',
+      background: '#18181B',
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',
       flexShrink: 0,
-      marginRight: '10px',
+      marginRight: '8px',
       marginTop: '2px',
-      boxShadow: '0 0 10px rgba(245,166,35,0.22)',
     }}>
       <span style={{
         fontFamily: "'Syne', sans-serif",
         fontSize: '13px',
         fontWeight: 800,
-        color: '#0E0C09',
+        color: C.amber,
         letterSpacing: '-0.04em',
         lineHeight: 1,
-      }}>
-        M
-      </span>
+      }}>M</span>
     </div>
   )
 }
@@ -58,30 +64,33 @@ function Mensaje({ role, content }) {
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 12 }}
+      initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.38, ease: [0.22, 1, 0.36, 1] }}
+      transition={{ duration: 0.35, ease }}
       style={{
         display: 'flex',
         justifyContent: isUser ? 'flex-end' : 'flex-start',
         alignItems: 'flex-start',
-        marginBottom: '14px',
+        marginBottom: '12px',
       }}
     >
       {!isUser && <MeridianAvatar />}
+
       <div style={{
-        maxWidth: '80%',
+        maxWidth: '78%',
         background: isUser ? C.userBg : C.asstBg,
-        border: `1px solid ${isUser ? C.userBorder : C.asstBorder}`,
-        borderRadius: isUser ? '18px 18px 5px 18px' : '5px 18px 18px 18px',
-        padding: '13px 17px',
+        borderRadius: isUser
+          ? '18px 18px 4px 18px'
+          : '4px 18px 18px 18px',
+        padding: '12px 16px',
       }}>
         <p style={{
           fontFamily: "'DM Sans', sans-serif",
           fontSize: '15px',
-          color: isUser ? C.accent : C.text,
+          fontWeight: 400,
+          color: isUser ? C.userText : C.asstText,
           margin: 0,
-          lineHeight: 1.7,
+          lineHeight: 1.65,
         }}>
           {texto}
         </p>
@@ -90,42 +99,39 @@ function Mensaje({ role, content }) {
   )
 }
 
-// ─── Skeleton animado mientras Claude "piensa" ────────────────────────────────
+// ─── Skeleton mientras Claude procesa ────────────────────────────────────────
 function SkeletonBurbuja() {
   return (
-    <div style={{ display: 'flex', alignItems: 'flex-start', marginBottom: '14px' }}>
-      {/* Avatar pulsante */}
+    <div style={{ display: 'flex', alignItems: 'flex-start', marginBottom: '12px' }}>
       <motion.div
-        animate={{ opacity: [0.45, 0.8, 0.45] }}
-        transition={{ duration: 1.4, repeat: Infinity }}
+        animate={{ opacity: [0.4, 0.7, 0.4] }}
+        transition={{ duration: 1.3, repeat: Infinity }}
         style={{
           width: '30px',
           height: '30px',
           borderRadius: '9px',
-          background: 'rgba(245,166,35,0.20)',
+          background: '#D4D4D8',
           flexShrink: 0,
-          marginRight: '10px',
+          marginRight: '8px',
         }}
       />
-      {/* Burbuja de texto simulado */}
       <div style={{
         background: C.asstBg,
-        border: `1px solid ${C.asstBorder}`,
-        borderRadius: '5px 18px 18px 18px',
+        borderRadius: '4px 18px 18px 18px',
         padding: '14px 18px',
         display: 'flex',
         flexDirection: 'column',
-        gap: '9px',
+        gap: '8px',
       }}>
-        {[130, 190, 95].map((w, i) => (
+        {[140, 200, 100].map((w, i) => (
           <motion.div
             key={i}
-            animate={{ opacity: [0.10, 0.30, 0.10] }}
-            transition={{ duration: 1.6, repeat: Infinity, delay: i * 0.22 }}
+            animate={{ opacity: [0.15, 0.35, 0.15] }}
+            transition={{ duration: 1.5, repeat: Infinity, delay: i * 0.2 }}
             style={{
               width: `${w}px`,
               height: '12px',
-              background: 'rgba(248,243,235,0.14)',
+              background: '#D4D4D8',
               borderRadius: '6px',
             }}
           />
@@ -135,21 +141,57 @@ function SkeletonBurbuja() {
   )
 }
 
-// ─── Parser de opciones del marcador [OPCIONES: A | B | C] ───────────────────
+// ─── Parser [OPCIONES: A | B | C] → ['A','B','C'] ────────────────────────────
 function parsearOpciones(content) {
   const match = content.match(/\[OPCIONES:\s*([^\]]+)\]/)
   if (!match) return null
   return match[1].split('|').map(o => o.trim()).filter(Boolean)
 }
 
-// ─── Icono enviar (SVG) ───────────────────────────────────────────────────────
+// ─── Icono enviar ─────────────────────────────────────────────────────────────
 function IconSend() {
   return (
-    <svg width="15" height="15" viewBox="0 0 24 24" fill="none"
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
       stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
       <line x1="22" y1="2" x2="11" y2="13" />
       <polygon points="22 2 15 22 11 13 2 9 22 2" />
     </svg>
+  )
+}
+
+// ─── Botón de opción individual ───────────────────────────────────────────────
+function OpcionButton({ label, index, onClick, disabled }) {
+  const [hovered, setHovered] = useState(false)
+
+  return (
+    <motion.button
+      initial={{ opacity: 0, scale: 0.95 }}
+      animate={{ opacity: 1, scale: 1 }}
+      transition={{ delay: index * 0.07, duration: 0.28, ease }}
+      whileTap={{ scale: 0.97 }}
+      onClick={onClick}
+      disabled={disabled}
+      onHoverStart={() => setHovered(true)}
+      onHoverEnd={() => setHovered(false)}
+      style={{
+        background: hovered ? C.amberLight : C.bgWhite,
+        border: `1.5px solid ${hovered ? C.amberBorder : '#D4D4D8'}`,
+        borderRadius: '10px',
+        padding: '10px 18px',
+        color: hovered ? C.amberDark : C.text,
+        fontFamily: "'DM Sans', sans-serif",
+        fontSize: '14px',
+        fontWeight: 500,
+        cursor: 'pointer',
+        transition: 'all 0.18s',
+        lineHeight: 1.2,
+        boxShadow: hovered
+          ? '0 2px 8px rgba(245,158,11,0.12)'
+          : '0 1px 2px rgba(0,0,0,0.04)',
+      }}
+    >
+      {label}
+    </motion.button>
   )
 }
 
@@ -160,12 +202,10 @@ export default function PreguntasFlow({ messages, onSend, isLoading }) {
   const bottomRef = useRef(null)
   const inputRef = useRef(null)
 
-  // Scroll automático al nuevo mensaje
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages, isLoading])
 
-  // Reenfocar el input cuando Claude responde sin opciones
   useEffect(() => {
     if (!isLoading && inputRef.current) {
       inputRef.current.focus()
@@ -174,9 +214,10 @@ export default function PreguntasFlow({ messages, onSend, isLoading }) {
 
   const ultimoAsistente = [...messages].reverse().find(m => m.role === 'assistant')
   const opciones = ultimoAsistente ? parsearOpciones(ultimoAsistente.content) : null
-  const esperandoRespuesta = messages.length > 0
-    && messages[messages.length - 1].role === 'assistant'
-    && !isLoading
+  const esperandoRespuesta =
+    messages.length > 0 &&
+    messages[messages.length - 1].role === 'assistant' &&
+    !isLoading
 
   const handleEnviar = () => {
     if (!inputValor.trim() || isLoading) return
@@ -196,16 +237,13 @@ export default function PreguntasFlow({ messages, onSend, isLoading }) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
 
-      {/* Historial de mensajes — scrolleable */}
+      {/* Área de mensajes scrolleable */}
       <div style={{
         flex: 1,
         overflowY: 'auto',
         paddingBottom: '8px',
-        // Ocultar scrollbar visualmente pero mantener funcionalidad
-        scrollbarWidth: 'thin',
-        scrollbarColor: 'rgba(245,166,35,0.15) transparent',
+        paddingTop: '4px',
       }}>
-        {/* initial={false} → los mensajes restaurados desde sessionStorage no animan */}
         <AnimatePresence initial={false}>
           {messages.map((m, i) => (
             <Mensaje key={i} role={m.role} content={m.content} />
@@ -215,16 +253,16 @@ export default function PreguntasFlow({ messages, onSend, isLoading }) {
         <div ref={bottomRef} />
       </div>
 
-      {/* Zona de respuesta — visible solo cuando Claude ha terminado de responder */}
+      {/* Zona de respuesta */}
       {esperandoRespuesta && (
         <motion.div
           initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
-          style={{ paddingTop: '14px', flexShrink: 0 }}
+          transition={{ duration: 0.28, ease }}
+          style={{ paddingTop: '12px', flexShrink: 0 }}
         >
           {opciones ? (
-            // Opciones predefinidas → botones pill con stagger
+            // Botones de opción predefinidos
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
               {opciones.map((op, i) => (
                 <OpcionButton
@@ -237,19 +275,18 @@ export default function PreguntasFlow({ messages, onSend, isLoading }) {
               ))}
             </div>
           ) : (
-            // Texto libre → input con icono de envío
+            // Input de texto libre
             <div style={{
               display: 'flex',
               gap: '8px',
-              background: inputFocused
-                ? 'rgba(255,248,230,0.05)'
-                : 'rgba(255,248,230,0.035)',
-              border: `1px solid ${inputFocused
-                ? 'rgba(245,166,35,0.30)'
-                : 'rgba(255,248,230,0.09)'}`,
+              background: C.bgWhite,
+              border: `1.5px solid ${inputFocused ? C.amberBorder : C.border}`,
               borderRadius: '14px',
               padding: '4px 4px 4px 16px',
-              transition: 'border-color 0.2s, background 0.2s',
+              boxShadow: inputFocused
+                ? '0 0 0 3px rgba(245,158,11,0.10)'
+                : '0 1px 3px rgba(0,0,0,0.06)',
+              transition: 'border-color 0.18s, box-shadow 0.18s',
             }}>
               <input
                 ref={inputRef}
@@ -268,32 +305,29 @@ export default function PreguntasFlow({ messages, onSend, isLoading }) {
                   color: C.text,
                   fontFamily: "'DM Sans', sans-serif",
                   fontSize: '15px',
+                  fontWeight: 400,
                   padding: '11px 0',
                 }}
               />
               <motion.button
-                whileHover={canSend ? { scale: 1.05 } : {}}
                 whileTap={canSend ? { scale: 0.94 } : {}}
                 onClick={handleEnviar}
                 disabled={!canSend}
                 style={{
-                  background: canSend
-                    ? 'linear-gradient(145deg, #F5A623, #FBBF24)'
-                    : 'rgba(245,166,35,0.09)',
+                  background: canSend ? '#18181B' : '#F4F4F5',
                   border: 'none',
                   borderRadius: '10px',
                   padding: '10px 16px',
-                  color: canSend ? '#0E0C09' : 'rgba(245,166,35,0.28)',
+                  color: canSend ? '#FFFFFF' : C.textFaint,
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px',
                   fontFamily: "'DM Sans', sans-serif",
                   fontSize: '13px',
                   fontWeight: 600,
                   cursor: canSend ? 'pointer' : 'not-allowed',
-                  transition: 'all 0.2s',
+                  transition: 'background 0.18s, color 0.18s',
                   flexShrink: 0,
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '6px',
-                  boxShadow: canSend ? '0 2px 10px rgba(245,166,35,0.28)' : 'none',
                 }}
               >
                 <IconSend />
@@ -304,46 +338,5 @@ export default function PreguntasFlow({ messages, onSend, isLoading }) {
         </motion.div>
       )}
     </div>
-  )
-}
-
-// ─── Botón de opción individual (separado para mejor lectura) ─────────────────
-function OpcionButton({ label, index, onClick, disabled }) {
-  const [hovered, setHovered] = useState(false)
-
-  return (
-    <motion.button
-      initial={{ opacity: 0, scale: 0.93 }}
-      animate={{ opacity: 1, scale: 1 }}
-      transition={{
-        delay: index * 0.07,
-        duration: 0.3,
-        ease: [0.22, 1, 0.36, 1],
-      }}
-      whileTap={{ scale: 0.96 }}
-      onClick={onClick}
-      disabled={disabled}
-      onHoverStart={() => setHovered(true)}
-      onHoverEnd={() => setHovered(false)}
-      style={{
-        background: hovered
-          ? 'rgba(245,166,35,0.13)'
-          : 'rgba(245,166,35,0.07)',
-        border: `1px solid ${hovered
-          ? 'rgba(245,166,35,0.35)'
-          : 'rgba(245,166,35,0.20)'}`,
-        borderRadius: '100px',
-        padding: '11px 20px',
-        color: C.text,
-        fontFamily: "'DM Sans', sans-serif",
-        fontSize: '14px',
-        cursor: 'pointer',
-        transition: 'background 0.2s, border-color 0.2s, transform 0.15s',
-        transform: hovered ? 'translateY(-1px)' : 'translateY(0)',
-        lineHeight: 1,
-      }}
-    >
-      {label}
-    </motion.button>
   )
 }
