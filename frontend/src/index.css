@@ -2,4 +2,7 @@
 @tailwind components;
 @tailwind utilities;
 
-/* TODO: agregar variables CSS globales de Meridian aquí si se necesitan */
+/* Placeholder del input de texto libre en PreguntasFlow */
+.meridian-input::placeholder {
+  color: rgba(245, 240, 232, 0.25);
+}
