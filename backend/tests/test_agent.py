@@ -42,43 +42,49 @@ def test_tools_schema_tiene_campos_requeridos():
         assert 'input_schema' in tool
 
 
-def test_call_claude_sin_resultado_retorna_finished_false():
+def test_call_claude_json_tipo_a_retorna_finished_false():
     with patch('agent.claude.get_client') as mock_client:
         mock_client.return_value.messages.create.return_value = _text_response(
-            'Hola! Para ayudarte mejor, cuéntame: ¿por qué estás aquí hoy?'
+            '{"finished": false, "response": "Hola, soy Meridian. ¿Por qué estás aquí hoy?"}'
         )
         result = call_claude([{'role': 'user', 'content': 'hola'}], mode='web')
 
     assert result['finished'] is False
-    assert result['response'] != ''
-    assert result['beneficios_json'] is None
+    assert 'response' in result
+    assert result.get('beneficios_json') is None
 
 
-def test_call_claude_parsea_resultado_json():
-    resultado = {
-        'finished': True,
-        'diferencia_anual_pesos': 2000000,
+def test_call_claude_json_tipo_b_retorna_finished_true():
+    beneficios = {
+        'total_estimado': 2000000,
         'beneficios': [],
         'productos_cmf': [],
         'plan_accion': [],
-        'costo_informal': {'multa_potencial_anual': 500000, 'beneficios_bloqueados': []},
     }
-    texto = f'Aqui estan tus resultados.\n<resultado>\n{json.dumps(resultado)}\n</resultado>'
+    payload = json.dumps({'finished': True, 'beneficios_json': beneficios})
 
     with patch('agent.claude.get_client') as mock_client:
-        mock_client.return_value.messages.create.return_value = _text_response(texto)
+        mock_client.return_value.messages.create.return_value = _text_response(payload)
         result = call_claude([{'role': 'user', 'content': 'ok'}], mode='web')
 
     assert result['finished'] is True
-    assert result['beneficios_json']['diferencia_anual_pesos'] == 2000000
-    assert '<resultado>' not in result['response']
+    assert result['beneficios_json']['total_estimado'] == 2000000
+
+
+def test_call_claude_texto_invalido_retorna_finished_false():
+    with patch('agent.claude.get_client') as mock_client:
+        mock_client.return_value.messages.create.return_value = _text_response(
+            'texto que no es json'
+        )
+        result = call_claude([{'role': 'user', 'content': 'hola'}], mode='web')
+
+    assert result['finished'] is False
+    assert result['response'] == 'texto que no es json'
 
 
 def test_call_claude_ejecuta_tool_y_continua():
-    resultado = {'finished': True, 'diferencia_anual_pesos': 1000000,
-                 'beneficios': [], 'productos_cmf': [], 'plan_accion': [],
-                 'costo_informal': {'multa_potencial_anual': 0, 'beneficios_bloqueados': []}}
-    texto_final = f'Listo!\n<resultado>\n{json.dumps(resultado)}\n</resultado>'
+    beneficios = {'total_estimado': 1000000, 'beneficios': [], 'productos_cmf': [], 'plan_accion': []}
+    texto_final = json.dumps({'finished': True, 'beneficios_json': beneficios})
 
     with patch('agent.claude.get_client') as mock_client:
         mock_client.return_value.messages.create.side_effect = [
@@ -93,9 +99,11 @@ def test_call_claude_ejecuta_tool_y_continua():
 
 def test_call_claude_whatsapp_usa_prompt_distinto():
     with patch('agent.claude.get_client') as mock_client:
-        mock_client.return_value.messages.create.return_value = _text_response('Hola!')
+        mock_client.return_value.messages.create.return_value = _text_response(
+            '{"finished": false, "response": "Hola! 👋"}'
+        )
         call_claude([{'role': 'user', 'content': 'hola'}], mode='whatsapp')
 
     call_args = mock_client.return_value.messages.create.call_args
-    system = call_args.kwargs.get('system') or call_args.args[0] if call_args.args else call_args.kwargs['system']
+    system = call_args.kwargs.get('system') or call_args.kwargs['system']
     assert 'WhatsApp' in system

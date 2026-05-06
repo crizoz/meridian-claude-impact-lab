@@ -26,17 +26,13 @@ def calcular_impuesto(rango_ingresos: str, tiene_rut: bool) -> dict:
     regimen = 'RES' if ventas_uf_anuales <= 2400 else '14D'
 
     tasa_ppm = data['regimenes'][regimen]['tasa_ppm_pct'] / 100
-    ventas_clp_anuales = ventas_uf_anuales * uf
-    ahorro_ppm_anual = int(ventas_clp_anuales * tasa_ppm * 0.3)
+    ventas_clp_mensuales = (ventas_uf_anuales * uf) / 12
+    impuesto_mensual = int(ventas_clp_mensuales * tasa_ppm)
 
     return {
-        'multa_anual': multa_anual,
-        'ahorro_ppm_anual': ahorro_ppm_anual,
         'regimen_recomendado': regimen,
-        'descripcion': (
-            f"Con el régimen {data['regimenes'][regimen]['nombre']}, pagas PPM del "
-            f"{data['regimenes'][regimen]['tasa_ppm_pct']}% mensual sobre tus ventas."
-        ),
+        'impuesto_mensual_estimado': impuesto_mensual,
+        'multa_anual': multa_anual,
     }
 
 
@@ -51,18 +47,17 @@ def calcular_credito_fogape(rango_ingresos: str, sector: str) -> dict:
 
     monto_max_uf = rango_data['monto_max_credito_uf']
     return {
-        'califica': True,
-        'monto_max_uf': monto_max_uf,
         'monto_max_pesos': monto_max_uf * uf,
-        'cobertura_pct': rango_data['cobertura_garantia_pct'],
+        'monto_max_uf': monto_max_uf,
+        'tasa_referencial': f"{rango_data['tasa_garantia_anual_pct']}%",
         'plazo_max_meses': rango_data['plazo_max_meses'],
-        'pasos': data['pasos_para_solicitarlo'],
-        'instituciones': data['instituciones_participantes'][:3],
+        'institucion_recomendada': data['instituciones_participantes'][0],
     }
 
 
 def obtener_productos_cmf(rango_ingresos: str, sector: str, region: str) -> list[dict]:
     data = _load('cmf_productos.json')
+    uf = _load('sii_tablas.json')['uf_a_clp']
 
     segmento = 'pequena empresa' if rango_ingresos in ('2M_5M', 'mas_5M') else 'microempresa'
     productos = [p for p in data['productos'] if segmento in p['segmento']]
@@ -72,10 +67,10 @@ def obtener_productos_cmf(rango_ingresos: str, sector: str, region: str) -> list
         {
             'institucion': p['institucion'],
             'producto': p['producto'],
+            'monto_max_pesos': p['monto_max_uf'] * uf,
             'monto_max_uf': p['monto_max_uf'],
-            'tasa_anual_pct': p['tasa_referencial_anual_pct'],
-            'plazo_max_meses': p['plazo_max_meses'],
-            'descripcion': p['descripcion'],
+            'tasa': f"{p['tasa_referencial_anual_pct']}%",
+            'plazo_meses': p['plazo_max_meses'],
             'link': p['link'],
         }
         for p in productos[:3]

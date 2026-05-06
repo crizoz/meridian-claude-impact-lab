@@ -1,4 +1,5 @@
 {
+  "_fuente": "fogape.cl, gob.cl, hacienda.cl — condiciones vigentes 2026. Verificar con banco participante antes de demo.",
   "descripcion": "FOGAPE garantiza creditos de instituciones financieras a micro y pequenas empresas con RUT activo",
   "requisito_rut_activo": true,
   "rangos_credito": [
@@ -6,8 +7,8 @@
       "rango_ventas_mensuales_clp": "menos_500k",
       "segmento": "Microempresa nivel 1",
       "ventas_anuales_max_uf": 800,
-      "monto_max_credito_uf": 100,
-      "cobertura_garantia_pct": 80,
+      "monto_max_credito_uf": 500,
+      "cobertura_garantia_pct": 95,
       "plazo_max_meses": 48,
       "tasa_garantia_anual_pct": 1.0
     },
@@ -15,8 +16,8 @@
       "rango_ventas_mensuales_clp": "500k_1M",
       "segmento": "Microempresa nivel 2",
       "ventas_anuales_max_uf": 1600,
-      "monto_max_credito_uf": 200,
-      "cobertura_garantia_pct": 80,
+      "monto_max_credito_uf": 1000,
+      "cobertura_garantia_pct": 95,
       "plazo_max_meses": 60,
       "tasa_garantia_anual_pct": 1.0
     },
@@ -24,8 +25,8 @@
       "rango_ventas_mensuales_clp": "1M_2M",
       "segmento": "Microempresa nivel 3",
       "ventas_anuales_max_uf": 2400,
-      "monto_max_credito_uf": 500,
-      "cobertura_garantia_pct": 80,
+      "monto_max_credito_uf": 2000,
+      "cobertura_garantia_pct": 95,
       "plazo_max_meses": 60,
       "tasa_garantia_anual_pct": 1.0
     },
@@ -33,8 +34,8 @@
       "rango_ventas_mensuales_clp": "2M_5M",
       "segmento": "Pequena empresa",
       "ventas_anuales_max_uf": 10000,
-      "monto_max_credito_uf": 2000,
-      "cobertura_garantia_pct": 70,
+      "monto_max_credito_uf": 7500,
+      "cobertura_garantia_pct": 80,
       "plazo_max_meses": 84,
       "tasa_garantia_anual_pct": 1.0
     },
@@ -42,8 +43,8 @@
       "rango_ventas_mensuales_clp": "mas_5M",
       "segmento": "Pequena empresa alta",
       "ventas_anuales_max_uf": 25000,
-      "monto_max_credito_uf": 5000,
-      "cobertura_garantia_pct": 60,
+      "monto_max_credito_uf": 15000,
+      "cobertura_garantia_pct": 70,
       "plazo_max_meses": 84,
       "tasa_garantia_anual_pct": 1.0
     }
@@ -56,7 +57,7 @@
   ],
   "instituciones_participantes": [
     "BancoEstado", "Scotiabank", "Banco de Chile", "Santander",
-    "BCI", "Itau", "Coopeuch", "Oriencoop"
+    "BCI", "Itau", "Coopeuch", "Oriencoop", "Banco Falabella"
   ],
   "pasos_para_solicitarlo": [
     "Iniciar actividades en SII.cl (gratis, 30 minutos)",

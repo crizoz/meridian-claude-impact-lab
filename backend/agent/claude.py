@@ -1,6 +1,5 @@
 import json
 import os
-import re
 
 import anthropic
 
@@ -27,14 +26,14 @@ def get_client() -> anthropic.Anthropic:
     return _client
 
 
-def _extract_resultado(text: str) -> dict | None:
-    match = re.search(r'<resultado>(.*?)</resultado>', text, re.DOTALL)
-    if not match:
-        return None
+def _parsear_respuesta(texto: str) -> dict:
     try:
-        return json.loads(match.group(1).strip())
+        data = json.loads(texto.strip())
+        if data.get('finished') is True:
+            return {'finished': True, 'beneficios_json': data['beneficios_json']}
+        return {'finished': False, 'response': data.get('response', texto)}
     except json.JSONDecodeError:
-        return None
+        return {'finished': False, 'response': texto}
 
 
 def call_claude(messages: list[dict], mode: str = 'web') -> dict:
@@ -66,17 +65,9 @@ def call_claude(messages: list[dict], mode: str = 'web') -> dict:
             continue
 
         text = next((b.text for b in response.content if b.type == 'text'), '')
-        resultado = _extract_resultado(text)
-        clean_text = re.sub(r'<resultado>.*?</resultado>', '', text, flags=re.DOTALL).strip()
-
-        return {
-            'response': clean_text,
-            'finished': resultado is not None,
-            'beneficios_json': resultado,
-        }
+        return _parsear_respuesta(text)
 
     return {
-        'response': 'Hubo un problema procesando tu información. Por favor intenta de nuevo.',
         'finished': False,
-        'beneficios_json': None,
+        'response': 'Hubo un problema procesando tu información. Por favor intenta de nuevo.',
     }

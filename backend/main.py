@@ -30,7 +30,7 @@ class ChatRequest(BaseModel):
 
 
 class ChatResponse(BaseModel):
-    response: str
+    response: str | None = None
     finished: bool
     beneficios_json: dict | None = None
 

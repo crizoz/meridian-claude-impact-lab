@@ -1,36 +1,40 @@
 {
+  "_fuente": "SII.cl — Ley 21.755, Circular 53/2025. PPM rebajado transitoriamente 2025-2027.",
   "regimenes": {
     "RES": {
       "nombre": "Renta Efectiva Simplificada",
-      "descripcion": "Regimen para microempresarios con ingresos bajos. Tasa fija del 25% sobre utilidades.",
+      "descripcion": "Regimen para microempresarios personas naturales con giro. Sin contabilidad completa.",
       "tasa_impuesto_pct": 25,
-      "tasa_ppm_pct": 0.25,
+      "tasa_ppm_pct": 0.125,
+      "nota_ppm": "Tasa rebajada transitoriamente por Ley 21.755 para 2025-2027 (normal: 0.25%)",
       "requisitos": {
         "ingresos_max_uf_anuales": 2400,
         "descripcion": "Personas naturales con giro, ingresos hasta UF 2.400 anuales (~$92M CLP)"
       },
       "beneficios": [
-        "PPM reducido: 0.25% sobre ventas brutas mensuales",
+        "PPM reducido: 0.125% sobre ventas brutas mensuales (2025-2027)",
         "Declaracion anual simplificada",
         "No requiere contabilidad completa",
-        "Acceso a creditos con historial tributario"
+        "Acceso a creditos con historial tributario desde el primer mes"
       ]
     },
     "14D": {
       "nombre": "Regimen Pro Pyme General",
-      "descripcion": "Para pymes con ventas entre UF 2.400 y UF 75.000 anuales. Tasa 25%.",
-      "tasa_impuesto_pct": 25,
-      "tasa_ppm_pct": 0.2,
+      "descripcion": "Para pymes con ventas hasta UF 75.000 anuales. IDPC 12.5% transitorio hasta 2027.",
+      "tasa_impuesto_pct": 12.5,
+      "tasa_impuesto_pct_normal": 25,
+      "nota_idpc": "12.5% transitorio 2025-2027 (Ley 21.755). Sube a 15% en 2028 y a 25% en 2029.",
+      "tasa_ppm_pct": 0.125,
+      "nota_ppm": "Rebajado a 0.125% para ingresos bajo UF 50.000 anuales (2025-2027)",
       "requisitos": {
-        "ingresos_min_uf_anuales": 2400,
         "ingresos_max_uf_anuales": 75000,
         "descripcion": "Empresas con ventas hasta UF 75.000 anuales (~$2.887M CLP)"
       },
       "beneficios": [
-        "PPM reducido: 0.2% sobre ventas brutas mensuales",
+        "IDPC 12.5% en lugar del 25% normal (ahorro real del 50% en impuesto)",
+        "PPM reducido: 0.125% sobre ventas brutas mensuales",
         "Depreciacion instantanea de activos",
-        "Gastos presuntos del 0.5% ventas para costos",
-        "Acceso a Fogape y Corfo"
+        "Acceso a Fogape y Corfo con garantia estatal"
       ]
     },
     "14A": {
