@@ -97,6 +97,15 @@ def test_call_claude_ejecuta_tool_y_continua():
     assert mock_client.return_value.messages.create.call_count == 2
 
 
+def test_call_claude_parsea_json_con_markdown():
+    payload = '```json\n{"finished": false, "response": "Hola!"}\n```'
+    with patch('agent.claude.get_client') as mock_client:
+        mock_client.return_value.messages.create.return_value = _text_response(payload)
+        result = call_claude([{'role': 'user', 'content': 'hola'}], mode='web')
+    assert result['finished'] is False
+    assert result['response'] == 'Hola!'
+
+
 def test_call_claude_whatsapp_usa_prompt_distinto():
     with patch('agent.claude.get_client') as mock_client:
         mock_client.return_value.messages.create.return_value = _text_response(

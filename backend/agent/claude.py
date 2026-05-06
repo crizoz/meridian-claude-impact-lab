@@ -26,9 +26,19 @@ def get_client() -> anthropic.Anthropic:
     return _client
 
 
+def _limpiar_texto(texto: str) -> str:
+    texto = texto.strip()
+    if texto.startswith('```'):
+        lines = texto.splitlines()
+        # sacar primera y ultima linea (``` o ```json)
+        inner = lines[1:-1] if lines[-1].strip() == '```' else lines[1:]
+        texto = '\n'.join(inner).strip()
+    return texto
+
+
 def _parsear_respuesta(texto: str) -> dict:
     try:
-        data = json.loads(texto.strip())
+        data = json.loads(_limpiar_texto(texto))
         if data.get('finished') is True:
             return {'finished': True, 'beneficios_json': data['beneficios_json']}
         return {'finished': False, 'response': data.get('response', texto)}
