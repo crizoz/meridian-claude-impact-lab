@@ -75,7 +75,17 @@ def _parsear_respuesta(texto: str) -> dict:
 
 
 def call_claude(messages: list[dict], mode: str = 'web') -> dict:
-    system = SYSTEM_PROMPT_WEB if mode == 'web' else SYSTEM_PROMPT_WHATSAPP
+    system_text = SYSTEM_PROMPT_WEB if mode == 'web' else SYSTEM_PROMPT_WHATSAPP
+    
+    # Empaquetar el system prompt para activar Prompt Caching
+    system_blocks = [
+        {
+            "type": "text",
+            "text": system_text,
+            "cache_control": {"type": "ephemeral"}
+        }
+    ]
+    
     # La API de Anthropic requiere que el primer mensaje sea role 'user'.
     # El frontend incluye el saludo inicial de Meridian como 'assistant',
     # así que lo descartamos antes de enviar.
@@ -87,7 +97,7 @@ def call_claude(messages: list[dict], mode: str = 'web') -> dict:
         response = get_client().messages.create(
             model='claude-haiku-4-5-20251001',
             max_tokens=2048,
-            system=system,
+            system=system_blocks,
             messages=history,
             tools=TOOLS_SCHEMA,
         )
