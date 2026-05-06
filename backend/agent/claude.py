@@ -9,64 +9,9 @@ from agent.tools import calcular_impuesto, calcular_credito_fogape, obtener_prod
 
 _client: anthropic.Anthropic | None = None
 
-TOOLS_SCHEMA = [
-    {
-        'name': 'calcular_impuesto',
-        'description': 'Calcula la multa anual por evasion y el ahorro en PPM si el emprendedor se formaliza.',
-        'input_schema': {
-            'type': 'object',
-            'properties': {
-                'rango_ingresos': {
-                    'type': 'string',
-                    'enum': ['menos_500k', '500k_1M', '1M_2M', '2M_5M', 'mas_5M'],
-                    'description': 'Rango de ingresos mensuales del emprendedor',
-                },
-                'tiene_rut': {
-                    'type': 'boolean',
-                    'description': 'Si el emprendedor ya tiene RUT tributario activo',
-                },
-            },
-            'required': ['rango_ingresos', 'tiene_rut'],
-        },
-    },
-    {
-        'name': 'calcular_credito_fogape',
-        'description': 'Determina el monto maximo de credito Fogape disponible si el emprendedor se formaliza.',
-        'input_schema': {
-            'type': 'object',
-            'properties': {
-                'rango_ingresos': {
-                    'type': 'string',
-                    'enum': ['menos_500k', '500k_1M', '1M_2M', '2M_5M', 'mas_5M'],
-                },
-                'sector': {
-                    'type': 'string',
-                    'description': 'Sector del negocio: comercio, servicios, manufactura, agro, construccion, otro',
-                },
-            },
-            'required': ['rango_ingresos', 'sector'],
-        },
-    },
-    {
-        'name': 'obtener_productos_cmf',
-        'description': 'Retorna los 3 mejores productos financieros regulados por la CMF para el perfil del emprendedor.',
-        'input_schema': {
-            'type': 'object',
-            'properties': {
-                'rango_ingresos': {
-                    'type': 'string',
-                    'enum': ['menos_500k', '500k_1M', '1M_2M', '2M_5M', 'mas_5M'],
-                },
-                'sector': {'type': 'string'},
-                'region': {
-                    'type': 'string',
-                    'description': 'Region de Chile donde opera. Usar "RM" si no se sabe.',
-                },
-            },
-            'required': ['rango_ingresos', 'sector', 'region'],
-        },
-    },
-]
+_SCHEMA_PATH = os.path.join(os.path.dirname(__file__), '..', 'data', 'tools_schema.json')
+with open(_SCHEMA_PATH, encoding='utf-8') as _f:
+    TOOLS_SCHEMA: list[dict] = json.load(_f)
 
 _TOOL_FN = {
     'calcular_impuesto': calcular_impuesto,
