@@ -300,7 +300,7 @@ export default function Resultado() {
                 }}
               >
                 <IconWhatsApp />
-                Hablar con un asesor por WhatsApp
+                Consulta con Meridian por WhatsApp
               </button>
 
               <button

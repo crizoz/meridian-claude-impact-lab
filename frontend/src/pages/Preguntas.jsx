@@ -111,6 +111,7 @@ export default function Preguntas() {
     return saved ? JSON.parse(saved) : []
   })
   const [isLoading, setIsLoading] = useState(false)
+  const [isFinalizing, setIsFinalizing] = useState(false)
 
   useEffect(() => {
     if (messages.length === 0) {
@@ -169,7 +170,8 @@ export default function Preguntas() {
         const beneficios = normalizarBeneficios(beneficiosRaw ?? {})
         sessionStorage.setItem('meridian_beneficios', JSON.stringify(beneficios))
         sessionStorage.removeItem('meridian_messages')
-        navigate('/resultado')
+        // Mostrar animación final; la navegación ocurre cuando termina (onAnalysisDone)
+        setIsFinalizing(true)
       } else {
         // Mostrar solo el texto de la pregunta, no el JSON completo
         const textoRespuesta = (() => {
@@ -303,6 +305,8 @@ export default function Preguntas() {
             messages={messages}
             onSend={handleSend}
             isLoading={isLoading}
+            isFinalizing={isFinalizing}
+            onAnalysisDone={() => navigate('/resultado')}
           />
         </div>
 

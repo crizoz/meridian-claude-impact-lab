@@ -37,6 +37,9 @@ body {
 ::-webkit-scrollbar-thumb { background: #DCD8CF; border-radius: 100px; }
 ::-webkit-scrollbar-thumb:hover { background: #A8A6A0; }
 
+.meridian-chat-scroll { scrollbar-width: none; -ms-overflow-style: none; }
+.meridian-chat-scroll::-webkit-scrollbar { display: none; width: 0; }
+
 button { -webkit-tap-highlight-color: transparent; }
 
 @keyframes fade-up {

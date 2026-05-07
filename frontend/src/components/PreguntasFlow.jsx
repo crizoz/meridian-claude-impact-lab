@@ -27,6 +27,57 @@ const ease = [0.22, 1, 0.36, 1]
 const WA_NUMBER = import.meta.env.VITE_WHATSAPP_NUMBER || '14155238886'
 const WA_TEXT = encodeURIComponent('Hola! Quiero recibir asesoría para formalizar mi negocio con Meridian.')
 
+// ── CSS Keyframes ──────────────────────────────────────────────────────────
+const LOADING_CSS = `
+@keyframes ml-enter {
+  from { opacity: 0; transform: translateY(-8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes ml-exit {
+  from { opacity: 1; transform: translateY(0); }
+  to   { opacity: 0; transform: translateY(-8px); }
+}
+@keyframes ml-pulse {
+  0%, 100% { transform: scale(1); }
+  50%       { transform: scale(1.08); }
+}
+@keyframes ml-scan {
+  0%, 100% { transform: translateX(-4px); }
+  50%       { transform: translateX(4px); }
+}
+@keyframes ml-flip {
+  0%   { transform: perspective(200px) rotateY(0deg); }
+  50%  { transform: perspective(200px) rotateY(180deg); }
+  100% { transform: perspective(200px) rotateY(360deg); }
+}
+@keyframes ml-spring-in {
+  from { transform: scale(0); }
+  to   { transform: scale(1); }
+}
+@keyframes ml-draw-check {
+  from { stroke-dashoffset: 30; }
+  to   { stroke-dashoffset: 0; }
+}
+@keyframes ml-overlay-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+@keyframes ml-overlay-out {
+  from { opacity: 1; }
+  to   { opacity: 0; }
+}
+@keyframes ml-card-in {
+  from { opacity: 0; transform: scale(0.9) translateY(20px); }
+  to   { opacity: 1; transform: scale(1) translateY(0); }
+}
+`
+if (typeof document !== 'undefined' && !document.getElementById('meridian-loading-css')) {
+  const s = document.createElement('style')
+  s.id = 'meridian-loading-css'
+  s.textContent = LOADING_CSS
+  document.head.appendChild(s)
+}
+
 function BotAvatar() {
   return (
     <div style={{
@@ -70,28 +121,6 @@ function Mensaje({ role, content }) {
         {texto}
       </div>
     </motion.div>
-  )
-}
-
-function Typing() {
-  return (
-    <div style={{ display: 'flex', alignItems: 'flex-start', marginBottom: 8 }}>
-      <BotAvatar />
-      <div style={{
-        background: C.bgCard,
-        padding: '14px 18px',
-        borderRadius: '4px 18px 18px 18px',
-        display: 'flex', gap: 4, alignItems: 'center',
-      }}>
-        {[0, 1, 2].map(i => (
-          <span key={i} style={{
-            width: 6, height: 6, borderRadius: '50%',
-            background: C.inkSoft, display: 'inline-block',
-            animation: `pulse-soft 1.2s ${i * 0.15}s infinite`,
-          }} />
-        ))}
-      </div>
-    </div>
   )
 }
 
@@ -154,9 +183,235 @@ function OpcionButton({ label, index, onClick, disabled }) {
   )
 }
 
-export default function PreguntasFlow({ messages, onSend, isLoading }) {
+// ── Iconos SVG inline ──────────────────────────────────────────────────────
+function SvgMicrofono() {
+  return (
+    <svg viewBox="0 0 24 24" width="24" height="24" fill="none"
+      stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z" />
+      <path d="M19 10v2a7 7 0 0 1-14 0v-2" />
+      <line x1="12" y1="19" x2="12" y2="23" />
+      <line x1="8" y1="23" x2="16" y2="23" />
+    </svg>
+  )
+}
+
+function SvgLupa() {
+  return (
+    <svg viewBox="0 0 24 24" width="24" height="24" fill="none"
+      stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="11" cy="11" r="8" />
+      <line x1="21" y1="21" x2="16.65" y2="16.65" />
+    </svg>
+  )
+}
+
+function SvgDinero() {
+  return (
+    <svg viewBox="0 0 24 24" width="24" height="24" fill="none"
+      stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
+      <line x1="12" y1="1" x2="12" y2="23" />
+      <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
+    </svg>
+  )
+}
+
+function SvgCheck() {
+  return (
+    <svg viewBox="0 0 24 24" width="24" height="24" fill="none"
+      stroke="white" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
+      <polyline
+        points="5 12 10 17 19 8"
+        strokeDasharray="30"
+        style={{ strokeDashoffset: 30, animation: 'ml-draw-check 0.4s ease-out 0.35s both' }}
+      />
+    </svg>
+  )
+}
+
+const ETAPAS = [
+  { icono: 'microfono', texto: 'Entendiendo tu situación...' },
+  { icono: 'lupa',      texto: 'Consultando datos del SII...' },
+  { icono: 'dinero',    texto: 'Calculando tus beneficios...' },
+  { icono: 'check',     texto: '¡Tu análisis está listo!' },
+]
+
+function iconSvg(icono) {
+  if (icono === 'microfono') return <SvgMicrofono />
+  if (icono === 'lupa') return <SvgLupa />
+  if (icono === 'dinero') return <SvgDinero />
+  return <SvgCheck />
+}
+
+function iconAnim(icono) {
+  if (icono === 'microfono') return 'ml-pulse 1.4s 0.2s ease-in-out infinite'
+  if (icono === 'lupa')      return 'ml-scan 0.8s 0.2s ease-in-out infinite'
+  if (icono === 'dinero')    return 'ml-flip 1.6s 0.2s ease-in-out infinite'
+  return 'ml-spring-in 0.5s cubic-bezier(0.34,1.56,0.64,1) both'
+}
+
+function StageIcon({ stage, size = 56 }) {
+  const { icono } = ETAPAS[stage]
+  const isCheck = stage === 3
+  return (
+    <div style={{
+      width: size, height: size, borderRadius: '50%',
+      background: isCheck ? C.accent : 'rgba(15,61,46,0.1)',
+      display: 'flex', alignItems: 'center', justifyContent: 'center',
+      color: isCheck ? 'white' : C.accent,
+      animation: iconAnim(icono),
+    }}>
+      {iconSvg(icono)}
+    </div>
+  )
+}
+
+function Typing() {
+  return (
+    <div style={{ display: 'flex', alignItems: 'flex-start', marginBottom: 8 }}>
+      <BotAvatar />
+      <div style={{
+        background: C.bgCard,
+        padding: '14px 18px',
+        borderRadius: '4px 18px 18px 18px',
+        display: 'flex', gap: 4, alignItems: 'center',
+      }}>
+        {[0, 1, 2].map(i => (
+          <span key={i} style={{
+            width: 6, height: 6, borderRadius: '50%',
+            background: C.inkSoft, display: 'inline-block',
+            animation: `pulse-soft 1.2s ${i * 0.15}s infinite`,
+          }} />
+        ))}
+      </div>
+    </div>
+  )
+}
+
+function LoadingAnimation({ isLoading, onDone }) {
+  const [etapa, setEtapa] = useState(0)
+  const [displayedStage, setDisplayedStage] = useState(0)
+  const [leavingStage, setLeavingStage] = useState(null)
+  const [overlayExiting, setOverlayExiting] = useState(false)
+  const onDoneRef = useRef(onDone)
+  const displayedStageRef = useRef(0)
+  useEffect(() => { onDoneRef.current = onDone }, [onDone])
+
+  // Stages cada 900ms
+  useEffect(() => {
+    const t1 = setTimeout(() => setEtapa(1), 900)
+    const t2 = setTimeout(() => setEtapa(2), 1800)
+    const t3 = setTimeout(() => setEtapa(3), 2700)
+    return () => { clearTimeout(t1); clearTimeout(t2); clearTimeout(t3) }
+  }, [])
+
+  // Transition animation when etapa changes
+  useEffect(() => {
+    if (etapa === displayedStageRef.current) return
+    const prev = displayedStageRef.current
+    displayedStageRef.current = etapa
+    setLeavingStage(prev)
+    setDisplayedStage(etapa)
+    const t = setTimeout(() => setLeavingStage(null), 220)
+    return () => clearTimeout(t)
+  }, [etapa])
+
+  // Exit: fade overlay out, then call onDone
+  useEffect(() => {
+    if (etapa === 3 && !isLoading) {
+      const t = setTimeout(() => {
+        setOverlayExiting(true)
+        setTimeout(() => onDoneRef.current(), 400)
+      }, 900)
+      return () => clearTimeout(t)
+    }
+  }, [etapa, isLoading])
+
+  return (
+    <div style={{
+      position: 'fixed',
+      top: 0, left: 0, right: 0, bottom: 0,
+      zIndex: 200,
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      background: 'rgba(248,244,237,0.75)',
+      backdropFilter: 'blur(14px)',
+      WebkitBackdropFilter: 'blur(14px)',
+      animation: overlayExiting
+        ? 'ml-overlay-out 0.4s ease forwards'
+        : 'ml-overlay-in 0.5s ease both',
+    }}>
+      <div style={{
+        background: C.bgCard2,
+        borderRadius: 24,
+        padding: '44px 52px 36px',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        boxShadow: '0 24px 64px rgba(0,0,0,0.09), 0 4px 16px rgba(0,0,0,0.04)',
+        minWidth: 240,
+        animation: 'ml-card-in 0.55s cubic-bezier(0.34,1.56,0.64,1) both',
+      }}>
+
+        {/* Icon zone */}
+        <div style={{ position: 'relative', width: 72, height: 72, marginBottom: 4 }}>
+          <div
+            key={`e-${displayedStage}`}
+            style={{
+              position: 'absolute', top: 0, left: 0,
+              animation: displayedStage !== 3 ? 'ml-enter 0.25s ease both' : undefined,
+            }}
+          >
+            <StageIcon stage={displayedStage} size={72} />
+          </div>
+
+          {leavingStage !== null && (
+            <div
+              key={`l-${leavingStage}`}
+              style={{
+                position: 'absolute', top: 0, left: 0,
+                animation: 'ml-exit 0.25s ease forwards',
+                pointerEvents: 'none',
+              }}
+            >
+              <StageIcon stage={leavingStage} size={72} />
+            </div>
+          )}
+        </div>
+
+        {/* Stage text */}
+        <p
+          key={`t-${displayedStage}`}
+          style={{
+            fontSize: 14, fontWeight: 500, color: C.inkSoft,
+            margin: '16px 0 14px 0', textAlign: 'center',
+            whiteSpace: 'nowrap',
+            animation: 'ml-enter 0.25s ease both',
+          }}
+        >
+          {ETAPAS[displayedStage].texto}
+        </p>
+
+        {/* Progress dots */}
+        <div style={{ display: 'flex', gap: 6 }}>
+          {ETAPAS.map((_, i) => (
+            <div key={i} style={{
+              width: 7, height: 7, borderRadius: '50%',
+              background: i === etapa ? C.accent : 'rgba(15,61,46,0.18)',
+              transition: 'background 0.35s ease',
+            }} />
+          ))}
+        </div>
+      </div>
+    </div>
+  )
+}
+
+export default function PreguntasFlow({ messages, onSend, isLoading, isFinalizing = false, onAnalysisDone }) {
   const [inputValor, setInputValor] = useState('')
   const [inputFocused, setInputFocused] = useState(false)
+  const [showLoadingAnim, setShowLoadingAnim] = useState(false)
   const bottomRef = useRef(null)
   const inputRef = useRef(null)
 
@@ -167,6 +422,11 @@ export default function PreguntasFlow({ messages, onSend, isLoading }) {
   useEffect(() => {
     if (!isLoading && inputRef.current) inputRef.current.focus()
   }, [isLoading])
+
+  // Arranca la animación final en cuanto el backend confirma que terminó
+  useEffect(() => {
+    if (isFinalizing) setShowLoadingAnim(true)
+  }, [isFinalizing])
 
   const ultimoAsistente = [...messages].reverse().find(m => m.role === 'assistant')
   const opciones = ultimoAsistente ? parsearOpciones(ultimoAsistente.content) : null
@@ -194,15 +454,25 @@ export default function PreguntasFlow({ messages, onSend, isLoading }) {
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
 
       {/* Historial scrolleable */}
-      <div style={{ flex: 1, overflowY: 'auto', paddingBottom: '8px', paddingTop: '4px' }}>
+      <div className="meridian-chat-scroll" style={{ flex: 1, overflowY: 'auto', paddingBottom: '8px', paddingTop: '4px' }}>
         <AnimatePresence initial={false}>
           {messages.map((m, i) => (
             <Mensaje key={i} role={m.role} content={m.content} />
           ))}
         </AnimatePresence>
-        {isLoading && <Typing />}
+        {isLoading && !isFinalizing && <Typing />}
         <div ref={bottomRef} />
       </div>
+
+      {showLoadingAnim && (
+        <LoadingAnimation
+          isLoading={false}
+          onDone={() => {
+            setShowLoadingAnim(false)
+            onAnalysisDone?.()
+          }}
+        />
+      )}
 
       {/* Zona de respuesta */}
       {esperandoRespuesta && (

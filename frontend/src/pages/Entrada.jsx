@@ -108,7 +108,7 @@ function PainCard({ icon, titulo, descripcion, ctaText, onClick, delayMs }) {
         transition: 'transform 0.15s ease, opacity 0.15s ease',
       }}
     >
-      <div style={{ marginBottom: 16 }}>
+      <div style={{ marginBottom: 16, display: 'flex', justifyContent: 'center' }}>
         {icon}
       </div>
 
