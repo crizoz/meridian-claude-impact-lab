@@ -24,7 +24,7 @@ const C = {
 
 const ease = [0.22, 1, 0.36, 1]
 
-const WA_NUMBER = '14155238886'
+const WA_NUMBER = import.meta.env.VITE_WHATSAPP_NUMBER || '14155238886'
 const WA_TEXT = encodeURIComponent('Hola! Quiero recibir asesoría para formalizar mi negocio con Meridian.')
 
 function BotAvatar() {
@@ -96,7 +96,7 @@ function Typing() {
 }
 
 function parsearOpciones(content) {
-  const match = content.match(/\[OPCIONES:\s*([^\]]+)\]/)
+  const match = content.match(/\[OPCIONES:\s*([^\]]+)\]/i)
   if (!match) return null
   return match[1].split('|').map(o => o.trim()).filter(Boolean)
 }

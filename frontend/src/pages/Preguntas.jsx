@@ -127,7 +127,7 @@ export default function Preguntas() {
 
   const pasoActual = messages.filter(m => m.role === 'user').length
   const etapa = pasoActual < ETAPAS.length ? ETAPAS[pasoActual] : 'Finalizando…'
-  const stepLabel = `${String(pasoActual + 1).padStart(2, '0')} / ${String(TOTAL_PASOS).padStart(2, '0')}`
+  const stepLabel = `Pregunta ${String(pasoActual + 1).padStart(2, '0')}`
 
   async function handleSend(respuesta) {
     const nuevosMensajes = [...messages, { role: 'user', content: respuesta }]
@@ -265,7 +265,7 @@ export default function Preguntas() {
               overflow: 'hidden',
             }}>
               <motion.div
-                animate={{ width: `${(Math.min(pasoActual, TOTAL_PASOS) / TOTAL_PASOS) * 100}%` }}
+                animate={{ width: `${Math.min((pasoActual + 1) * 14, 95)}%` }}
                 transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
                 style={{
                   height: '100%',

@@ -80,8 +80,13 @@ def call_claude(messages: list[dict], mode: str = 'web') -> dict:
     # El frontend incluye el saludo inicial de Meridian como 'assistant',
     # así que lo descartamos antes de enviar.
     history = [m for m in messages if isinstance(m.get('content'), str) or isinstance(m.get('content'), list)]
-    while history and history[0].get('role') == 'assistant':
-        history = history[1:]
+    
+    if history and history[0].get('role') == 'assistant':
+        intro_content = history[0].get('content', '')
+        history.insert(0, {
+            'role': 'user',
+            'content': f"Hola. Ya recibí tu saludo: '{intro_content}'. Continúa con la siguiente pregunta."
+        })
 
     for _ in range(10):
         response = get_client().messages.create(
