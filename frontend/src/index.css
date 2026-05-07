@@ -2,7 +2,52 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Placeholder del input de texto libre en PreguntasFlow */
+*, *::before, *::after {
+  box-sizing: border-box;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+html, body, #root {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  background: #F8F4ED;
+}
+
+body {
+  font-family: 'Inter Tight', system-ui, sans-serif;
+  color: #1A1A1A;
+}
+
+::selection {
+  background: rgba(15, 61, 46, 0.15);
+  color: #0F3D2E;
+}
+
 .meridian-input::placeholder {
-  color: rgba(245, 240, 232, 0.25);
+  color: #A8A6A0;
+}
+.meridian-input:focus {
+  outline: none;
+}
+
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #DCD8CF; border-radius: 100px; }
+::-webkit-scrollbar-thumb:hover { background: #A8A6A0; }
+
+button { -webkit-tap-highlight-color: transparent; }
+
+@keyframes fade-up {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes fade-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+@keyframes pulse-soft {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.4; }
 }

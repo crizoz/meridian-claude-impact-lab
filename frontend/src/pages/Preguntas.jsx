@@ -13,9 +13,30 @@ import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import PreguntasFlow from '../components/PreguntasFlow'
 
-const TOTAL_PASOS_ESTIMADOS = 6
+const TOTAL_PASOS = 6
 
 const API_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:8000'
+
+const ETAPAS = [
+  'Tu negocio',
+  'Ingresos',
+  'Ubicación',
+  'Tu equipo',
+  'Situación tributaria',
+  'Últimos detalles',
+]
+
+// ─── Tokens de color ──────────────────────────────────────────────────────────
+const C = {
+  bg: '#F8F4ED',
+  bgCard: '#EDEAE3',
+  ink: '#1A1A1A',
+  inkMid: '#4A4A48',
+  inkSoft: '#76756F',
+  line: '#DCD8CF',
+  lineSoft: '#E8E5DC',
+  accent: '#0F3D2E',
+}
 
 // Mapea la urgencia según la posición del paso (el backend no la envía)
 function urgenciaPorPaso(index) {
@@ -67,6 +88,16 @@ function mensajeInicial(dolor) {
   return intros[dolor] ?? intros.quiero_crecer
 }
 
+// ─── Icono atrás ──────────────────────────────────────────────────────────────
+function IconBack() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+      stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+      <polyline points="15 18 9 12 15 6" />
+    </svg>
+  )
+}
+
 export default function Preguntas() {
   const navigate = useNavigate()
 
@@ -79,7 +110,6 @@ export default function Preguntas() {
   })
   const [isLoading, setIsLoading] = useState(false)
 
-  // Inicializa la primera pregunta si no hay historial
   useEffect(() => {
     if (messages.length === 0) {
       const dolor = sessionStorage.getItem('meridian_dolor') ?? 'quiero_crecer'
@@ -95,9 +125,9 @@ export default function Preguntas() {
     }
   }, [messages])
 
-  // paso = número de respuestas del usuario enviadas hasta ahora
   const pasoActual = messages.filter(m => m.role === 'user').length
-  const progreso = Math.min(pasoActual / TOTAL_PASOS_ESTIMADOS, 1)
+  const etapa = pasoActual < ETAPAS.length ? ETAPAS[pasoActual] : 'Finalizando…'
+  const stepLabel = `Pregunta ${String(pasoActual + 1).padStart(2, '0')}`
 
   async function handleSend(respuesta) {
     const nuevosMensajes = [...messages, { role: 'user', content: respuesta }]
@@ -143,9 +173,7 @@ export default function Preguntas() {
         setMessages([...nuevosMensajes, { role: 'assistant', content: textoRespuesta }])
       }
     } catch (err) {
-      // TODO: reemplazar console.error por un toast o mensaje de error inline
       console.error('Error al procesar respuesta de Claude:', err)
-      // Retroceder al estado anterior para que el usuario pueda reintentar
       setMessages(messages)
     } finally {
       setIsLoading(false)
@@ -155,100 +183,106 @@ export default function Preguntas() {
   return (
     <div style={{
       height: '100dvh',
-      background: '#0F0E0C',
+      background: C.bg,
       display: 'flex',
       flexDirection: 'column',
-      position: 'relative',
-      overflow: 'hidden',
     }}>
-
-      {/* Fondo decorativo — igual que Entrada.jsx */}
       <div style={{
-        position: 'absolute',
-        inset: 0,
-        backgroundImage: 'radial-gradient(ellipse 80% 40% at 50% -5%, rgba(251,191,36,0.08) 0%, transparent 70%)',
-        pointerEvents: 'none',
-      }} />
-
-      <div style={{
-        maxWidth: '560px',
+        maxWidth: '600px',
         width: '100%',
         margin: '0 auto',
-        padding: '0 24px',
+        padding: '0 22px',
         display: 'flex',
         flexDirection: 'column',
         height: '100%',
-        position: 'relative',
       }}>
 
-        {/* Header: logo + barra de progreso */}
-        <div style={{ paddingTop: '24px', paddingBottom: '20px', flexShrink: 0 }}>
+        {/* ── Header ── */}
+        <header style={{ flexShrink: 0, paddingTop: '18px', paddingBottom: '14px' }}>
 
-          {/* Logo — idéntico al de Entrada.jsx */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '20px' }}>
-            <div style={{
-              width: '28px', height: '28px', borderRadius: '8px',
-              background: '#FBBF24',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-            }}>
-              <div style={{ width: '10px', height: '10px', borderRadius: '50%', background: '#0F0E0C' }} />
+          {/* Fila: volver · logo centrado · contador */}
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            marginBottom: 14,
+          }}>
+            <button
+              onClick={() => navigate('/')}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 6,
+                background: 'transparent',
+                border: 'none',
+                padding: '4px 0',
+                cursor: 'pointer',
+                color: C.inkMid,
+                fontFamily: "'Inter Tight', system-ui, sans-serif",
+                fontSize: 13, fontWeight: 500,
+              }}
+            >
+              <IconBack />
+              Volver
+            </button>
+
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <img src="/Logo.svg" alt="Meridian"
+                style={{ height: 28, width: 'auto', objectFit: 'contain', flexShrink: 0 }} />
+              <span style={{
+                fontFamily: "'Inter Tight', system-ui, sans-serif",
+                fontSize: 14, fontWeight: 800,
+                color: C.ink, letterSpacing: '0.10em',
+                textTransform: 'uppercase',
+              }}>
+                Meridian
+              </span>
             </div>
-            <span style={{
-              fontFamily: "'Syne', sans-serif",
-              fontSize: '18px', fontWeight: 700,
-              color: '#F5F0E8', letterSpacing: '-0.02em',
+
+            <div style={{
+              fontFamily: "'JetBrains Mono', monospace",
+              fontSize: 11, fontWeight: 400,
+              color: C.inkSoft,
+              letterSpacing: '0.04em',
             }}>
-              Meridian
-            </span>
+              {stepLabel}
+            </div>
           </div>
 
-          {/* Barra de progreso */}
-          <div>
+          {/* Progreso: etiqueta de etapa + barra única */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
             <div style={{
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-              marginBottom: '8px',
+              fontSize: 10, fontWeight: 700, letterSpacing: '0.16em',
+              textTransform: 'uppercase', color: C.accent,
+              minWidth: 110, flexShrink: 0,
             }}>
-              <span style={{
-                fontFamily: "'DM Sans', sans-serif",
-                fontSize: '12px',
-                color: 'rgba(245,240,232,0.35)',
-                textTransform: 'uppercase',
-                letterSpacing: '0.08em',
-              }}>
-                Calculando tu perfil
-              </span>
-              <span style={{
-                fontFamily: "'Syne', sans-serif",
-                fontSize: '12px', fontWeight: 700,
-                color: 'rgba(251,191,36,0.6)',
-              }}>
-                {pasoActual}/{TOTAL_PASOS_ESTIMADOS}
-              </span>
+              {etapa}
             </div>
             <div style={{
-              height: '3px',
-              background: 'rgba(255,255,255,0.06)',
-              borderRadius: '100px',
+              flex: 1, height: 3,
+              background: C.lineSoft,
+              borderRadius: 100,
               overflow: 'hidden',
             }}>
               <motion.div
-                animate={{ width: `${progreso * 100}%` }}
+                animate={{ width: `${Math.min((pasoActual + 1) * 14, 95)}%` }}
                 transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
                 style={{
                   height: '100%',
-                  background: 'linear-gradient(to right, rgba(251,191,36,0.6), #FBBF24)',
-                  borderRadius: '100px',
-                  minWidth: progreso > 0 ? '8px' : '0px',
+                  background: C.accent,
+                  borderRadius: 100,
                 }}
               />
             </div>
           </div>
-        </div>
+        </header>
 
-        {/* Flujo conversacional — ocupa el espacio restante */}
-        <div style={{ flex: 1, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
+        {/* ── Conversación ── */}
+        <div style={{
+          flex: 1, overflow: 'hidden',
+          display: 'flex', flexDirection: 'column',
+          paddingTop: '12px',
+        }}>
           <PreguntasFlow
             messages={messages}
             onSend={handleSend}
@@ -256,7 +290,7 @@ export default function Preguntas() {
           />
         </div>
 
-        <div style={{ height: '24px', flexShrink: 0 }} />
+        <div style={{ height: '20px', flexShrink: 0 }} />
       </div>
     </div>
   )
