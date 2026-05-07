@@ -68,48 +68,52 @@ export default function BeneficioCard({ tipo, nombre, descripcion, monto_estimad
       style={{
         background: '#FFFFFF',
         border: `1px solid ${C.line}`,
-        borderRadius: 16,
-        padding: '18px 20px',
+        borderRadius: 20,
+        padding: '24px 24px 22px',
         display: 'flex',
         flexDirection: 'column',
-        gap: 10,
+        gap: 14,
         borderLeft: `4px solid ${cfg.leftBorder}`,
+        height: '100%',
+        boxSizing: 'border-box',
       }}
     >
-      {/* Top: badge + monto */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12 }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <div style={{
-            width: 34, height: 34, borderRadius: 9,
-            background: cfg.iconBg,
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            fontSize: 17,
-          }}>
-            {cfg.icon}
-          </div>
-          <span style={{
-            background: cfg.badgeBg, color: cfg.badgeColor,
-            fontSize: 10, fontWeight: 700,
-            padding: '3px 9px', borderRadius: 100,
-            textTransform: 'uppercase', letterSpacing: '0.08em',
-          }}>
-            {cfg.label}
-          </span>
+      {/* Icono + badge */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+        <div style={{
+          width: 42, height: 42, borderRadius: 12,
+          background: cfg.iconBg,
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          fontSize: 20, flexShrink: 0,
+        }}>
+          {cfg.icon}
         </div>
         <span style={{
-          fontSize: 17, fontWeight: 800,
-          color: cfg.accentColor, flexShrink: 0,
-          letterSpacing: '-0.01em',
+          background: cfg.badgeBg, color: cfg.badgeColor,
+          fontSize: 10, fontWeight: 700,
+          padding: '4px 10px', borderRadius: 100,
+          textTransform: 'uppercase', letterSpacing: '0.08em',
         }}>
-          {montoFormateado}
+          {cfg.label}
         </span>
       </div>
 
-      <p style={{ fontSize: 15, fontWeight: 700, color: C.ink, margin: 0, lineHeight: 1.3 }}>
+      {/* Monto destacado */}
+      <div style={{
+        fontSize: 28, fontWeight: 800,
+        color: cfg.accentColor,
+        letterSpacing: '-0.02em', lineHeight: 1,
+      }}>
+        {montoFormateado}
+      </div>
+
+      {/* Nombre */}
+      <p style={{ fontSize: 15, fontWeight: 700, color: C.ink, margin: 0, lineHeight: 1.35 }}>
         {nombre}
       </p>
 
-      <p style={{ fontSize: 13.5, color: C.inkSoft, margin: 0, lineHeight: 1.6 }}>
+      {/* Descripción */}
+      <p style={{ fontSize: 13, color: C.inkSoft, margin: 0, lineHeight: 1.65, flexGrow: 1 }}>
         {descripcion}
       </p>
     </motion.div>

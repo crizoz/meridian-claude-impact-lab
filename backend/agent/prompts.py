@@ -76,11 +76,13 @@ calcular_impuesto(rango_ingresos: str, tiene_rut: bool) → devuelve:
 
 calcular_credito_fogape(rango_ingresos: str, sector: str) → devuelve:
 {
-  "monto_max_pesos": int,
+  "monto_max_pesos": int,            ← monto VIABLE según capacidad de pago (30% ingresos)
   "monto_max_uf": int,
-  "tasa_referencial": str,
+  "monto_techo_fogape_pesos": int,   ← techo máximo del programa (meta de crecimiento)
+  "cuota_mensual_estimada": int,     ← cuota real = 30% del ingreso mensual
   "plazo_max_meses": int,
-  "institucion_recomendada": str
+  "cobertura_garantia_pct": int,     ← porcentaje de garantía estatal
+  "tasa_referencial": str
 }
 
 obtener_productos_cmf(rango_ingresos: str, sector: str, region: str) → devuelve:
@@ -96,6 +98,30 @@ obtener_productos_cmf(rango_ingresos: str, sector: str, region: str) → devuelv
   }
 ]
 
+## REGLAS PARA DESCRIPCIONES DE CRÉDITO — OBLIGATORIO
+
+Cuando construyas el campo "descripcion" de cualquier beneficio financiero con Fogape, usa SIEMPRE esta estructura de tres partes:
+
+Parte 1 — El monto viable real (usa monto_max_pesos de calcular_credito_fogape):
+"Con tus ingresos actuales, un banco te prestaría hasta $[monto_max_pesos formateado] con garantía Fogape del [cobertura_garantia_pct]%."
+
+Parte 2 — La cuota real (usa cuota_mensual_estimada):
+"Tu cuota mensual estimada sería de $[cuota_mensual_estimada formateado], que representa el 30% de tus ingresos."
+
+Parte 3 — El crecimiento posible (usa monto_techo_fogape_pesos):
+"Con 3 meses de declaraciones en el SII puedes acceder hasta $[monto_techo_fogape_pesos formateado] — el techo máximo que Fogape garantiza para tu nivel de ventas."
+
+REGLAS DE NÚMEROS — CRÍTICO:
+- El campo "monto_estimado" del beneficio financiero Fogape SIEMPRE usa monto_max_pesos (el viable), NUNCA monto_techo_fogape_pesos
+- El campo "total_estimado" y "acceso_capital_nuevo" usan monto_max_pesos (el viable), NUNCA el techo
+- NUNCA escribas en la descripción el monto_techo_fogape_pesos como el monto principal o disponible hoy
+- NUNCA escribas frases como "calificas para crédito Fogape hasta $577.500.000" ni uses el techo como el monto actual
+
+Ejemplo correcto para rango 500k_1M (monto_max_pesos=9.000.000, techo=38.000.000, cuota=225.000):
+"nombre": "Acceso a crédito Fogape"
+"descripcion": "Con tus ingresos actuales, un banco te prestaría hasta $9.000.000 con garantía Fogape del 95%. Tu cuota mensual estimada sería de $225.000, que representa el 30% de tus ingresos. Con 3 meses de declaraciones en el SII puedes acceder hasta $38.000.000 — el techo máximo que Fogape garantiza para tu nivel de ventas."
+"monto_estimado": 9000000
+
 ## ESTRUCTURA DEL JSON FINAL — CRÍTICO
 
 REGLA ABSOLUTA: usa EXACTAMENTE estos nombres de campo. No inventes nombres distintos. No agregues campos extra. Los valores numéricos deben ser ENTEROS, nunca strings con $ ni puntos.
@@ -104,7 +130,7 @@ IMPORTANTE: DEBES agregar 1 o 2 beneficios "comerciales" extra en la lista de be
 
 Reglas críticas de formato — los valores numéricos deben ser ENTEROS, nunca strings con $ ni puntos. tasa_anual_pct es decimal sin % (ej: 22.0). plan_accion es LISTA de objetos, nunca un dict con paso_1/paso_2.
 
-{"finished": true, "beneficios_json": {"total_estimado": 3300000, "ahorro_anual_multas": 300000, "acceso_capital_nuevo": 3000000, "beneficios": [{"nombre": "Crédito hasta $3.000.000 disponible con tu RUT", "descripcion": "Con RUT activo calificas para crédito Fogape con garantía estatal del 95%.", "monto_estimado": 3000000, "tipo": "financiero"}, {"nombre": "Evitas multas del SII de $300.000 al año", "descripcion": "Sin RUT activo arriesgas multas anuales del SII.", "monto_estimado": 300000, "tipo": "tributario"}, {"nombre": "[BENEFICIO PERSONALIZADO según actividad]", "descripcion": "[Descripción práctica y específica]", "monto_estimado": 500000, "tipo": "comercial"}], "productos_cmf": [{"nombre": "Microcrédito Emprendedor", "entidad": "BancoEstado", "monto_maximo_uf": 100, "tasa_anual_pct": 22.0, "plazo_max_meses": 48, "link": "https://www.bancoestado.cl"}], "plan_accion": [{"paso": 1, "descripcion": "Inicia actividades en el SII en línea (20 min, gratis)", "tiempo_estimado": "Hoy", "urgencia": "alta", "link_recurso": "https://misiir.sii.cl"}, {"paso": 2, "descripcion": "Elige régimen RES (usar valor de calcular_impuesto)", "tiempo_estimado": "Durante el registro en SII", "urgencia": "alta", "link_recurso": "https://www.sii.cl"}, {"paso": 3, "descripcion": "Abre CuentaRUT Emprendedor en BancoEstado (gratis)", "tiempo_estimado": "Esta semana", "urgencia": "media", "link_recurso": "https://www.bancoestado.cl"}, {"paso": 4, "descripcion": "Haz tu primera declaración mensual de IVA/PPM", "tiempo_estimado": "Día 12 del mes siguiente", "urgencia": "media", "link_recurso": "https://www.sii.cl"}, {"paso": 5, "descripcion": "Solicita crédito Fogape con tu RUT activo en BancoEstado (usar institucion de calcular_credito_fogape)", "tiempo_estimado": "Semana 2", "urgencia": "baja", "link_recurso": "https://www.fogape.cl"}]}}
+{"finished": true, "beneficios_json": {"total_estimado": 9300000, "ahorro_anual_multas": 300000, "acceso_capital_nuevo": 9000000, "beneficios": [{"nombre": "Crédito Fogape disponible con tu RUT", "descripcion": "Con tus ingresos actuales, un banco te prestaría hasta $9.000.000 con garantía Fogape del 95%. Tu cuota mensual estimada sería de $225.000, que representa el 30% de tus ingresos. Con 3 meses de declaraciones en el SII puedes acceder hasta $38.000.000 — el techo máximo que Fogape garantiza para tu nivel de ventas.", "monto_estimado": 9000000, "tipo": "financiero"}, {"nombre": "Evitas multas del SII de $300.000 al año", "descripcion": "Sin RUT activo arriesgas multas anuales del SII.", "monto_estimado": 300000, "tipo": "tributario"}, {"nombre": "[BENEFICIO PERSONALIZADO según actividad]", "descripcion": "[Descripción práctica y específica]", "monto_estimado": 500000, "tipo": "comercial"}], "productos_cmf": [{"nombre": "Microcrédito Emprendedor", "entidad": "BancoEstado", "monto_maximo_uf": 100, "tasa_anual_pct": 22.0, "plazo_max_meses": 48, "link": "https://www.bancoestado.cl"}], "plan_accion": [{"paso": 1, "descripcion": "Inicia actividades en el SII en línea (20 min, gratis)", "tiempo_estimado": "Hoy", "urgencia": "alta", "link_recurso": "https://misiir.sii.cl"}, {"paso": 2, "descripcion": "Elige régimen RES (usar valor de calcular_impuesto)", "tiempo_estimado": "Durante el registro en SII", "urgencia": "alta", "link_recurso": "https://www.sii.cl"}, {"paso": 3, "descripcion": "Abre CuentaRUT Emprendedor en BancoEstado (gratis)", "tiempo_estimado": "Esta semana", "urgencia": "media", "link_recurso": "https://www.bancoestado.cl"}, {"paso": 4, "descripcion": "Haz tu primera declaración mensual de IVA/PPM", "tiempo_estimado": "Día 12 del mes siguiente", "urgencia": "media", "link_recurso": "https://www.sii.cl"}, {"paso": 5, "descripcion": "Solicita crédito Fogape con tu RUT activo en BancoEstado (usar institucion de calcular_credito_fogape)", "tiempo_estimado": "Semana 2", "urgencia": "baja", "link_recurso": "https://www.fogape.cl"}]}}
 """
 
 SYSTEM_PROMPT_WHATSAPP = """Eres el asesor de Meridian por WhatsApp. Ayudas a emprendedores informales chilenos a entender en pesos reales cuánto ganan formalizándose.

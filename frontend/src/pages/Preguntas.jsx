@@ -56,12 +56,14 @@ function normalizarBeneficios(raw) {
       descripcion: b.descripcion ?? '',
       monto_estimado: b.monto_estimado ?? 0,
     })),
-    productos_cmf: (raw.productos_cmf ?? []).map(p => ({
+    productos_cmf: (raw.productos_cmf ?? raw.creditos_cmf ?? []).map(p => ({
       nombre: p.producto ?? p.nombre ?? '',
       entidad: p.institucion ?? p.entidad ?? '',
       monto_maximo_uf: p.monto_max_uf ?? p.monto_maximo_uf ?? 0,
-      tasa_anual_pct: p.tasa_anual_pct ?? 0,
-      plazo_max_meses: p.plazo_max_meses ?? null,
+      // El tool devuelve 'tasa' como string ("22.0%"), Claude puede devolver 'tasa_anual_pct' como número
+      tasa_anual_pct: p.tasa_anual_pct ?? parseFloat(p.tasa ?? '0') ?? 0,
+      // El tool devuelve 'plazo_meses', Claude puede devolver 'plazo_max_meses'
+      plazo_max_meses: p.plazo_max_meses ?? p.plazo_meses ?? null,
       link: p.link ?? '',
     })),
     plan_accion: (raw.plan_accion ?? []).map((p, i) => ({
@@ -129,8 +131,12 @@ export default function Preguntas() {
   const etapa = pasoActual < ETAPAS.length ? ETAPAS[pasoActual] : 'Finalizando…'
   const stepLabel = `Pregunta ${String(pasoActual + 1).padStart(2, '0')}`
 
-  async function handleSend(respuesta) {
-    const nuevosMensajes = [...messages, { role: 'user', content: respuesta }]
+  function handleSend(respuesta) {
+    handleSendRaw(respuesta, messages)
+  }
+
+  async function handleSendRaw(respuesta, baseMessages) {
+    const nuevosMensajes = [...baseMessages, { role: 'user', content: respuesta }]
     setMessages(nuevosMensajes)
     setIsLoading(true)
 
@@ -170,7 +176,17 @@ export default function Preguntas() {
           try { return JSON.parse(data.response ?? '')?.response ?? data.response }
           catch { return data.response }
         })()
-        setMessages([...nuevosMensajes, { role: 'assistant', content: textoRespuesta }])
+        const mensajesActualizados = [...nuevosMensajes, { role: 'assistant', content: textoRespuesta }]
+        setMessages(mensajesActualizados)
+
+        // Si Claude manda un mensaje de transición ("voy a calcular...") sin pregunta ni
+        // opciones, re-disparamos automáticamente para no dejar al usuario colgado.
+        const esTransicion = textoRespuesta &&
+          !textoRespuesta.includes('?') &&
+          !textoRespuesta.includes('[OPCIONES:')
+        if (esTransicion) {
+          setTimeout(() => handleSendRaw('continúa', mensajesActualizados), 300)
+        }
       }
     } catch (err) {
       console.error('Error al procesar respuesta de Claude:', err)

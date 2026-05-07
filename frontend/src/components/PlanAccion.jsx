@@ -1,25 +1,179 @@
-// PlanAccion — pasos concretos con progreso y checkboxes persistidos.
-
+// PlanAccion — timeline vertical, paso a paso
 import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 
 const C = {
-  bg:      '#F8F4ED',
-  bgCard:  '#EDEAE3',
-  ink:     '#1A1A1A',
-  inkMid:  '#4A4A48',
+  bg: '#F8F4ED',
+  bgCard: '#EDEAE3',
+  ink: '#1A1A1A',
+  inkMid: '#4A4A48',
   inkSoft: '#76756F',
-  line:    '#DCD8CF',
-  lineSoft:'#E8E5DC',
-  accent:  '#0F3D2E',
+  inkFaint: '#A8A6A0',
+  line: '#DCD8CF',
+  lineSoft: '#E8E5DC',
+  accent: '#0F3D2E',
 }
 
 const STORAGE_KEY = 'meridian_plan_completado'
 
-const URGENCIA_CFG = {
-  alta:  { label: 'Urgente', color: '#DC2626', bg: 'rgba(220,38,38,0.08)' },
-  media: { label: 'Esta semana', color: '#D97706', bg: 'rgba(217,119,6,0.08)' },
-  baja:  { label: 'Este mes', color: '#76756F', bg: 'rgba(118,117,111,0.08)' },
+// Links canónicos por tipo de acción
+const LINK_MAP = [
+  {
+    keywords: ['inicio de actividades', 'iniciar actividades', 'iniciar actividad'],
+    href: 'https://zeus.sii.cl/cvc_cgi/stc/getiavias.cgi',
+    label: 'Iniciar en SII.cl →',
+  },
+  {
+    keywords: ['sii', 'rut', 'formaliz', 'actividades económicas', 'registro sii'],
+    href: 'https://www.sii.cl/servicios_online/1040-inicio_de_actividades.html',
+    label: 'Ir al SII →',
+  },
+  {
+    keywords: ['boleta electrónica', 'boleta', 'factura electrónica', 'emisión de boleta'],
+    href: 'https://misiir.sii.cl',
+    label: 'Portal Boletas SII →',
+  },
+  {
+    keywords: ['cuenta rut', 'cuentarut', 'cuenta corriente', 'cuenta vista', 'bancoestado'],
+    href: 'https://www.bancoestado.cl/content/bancoestado-public/cl/es/home/personas/cuentas/cuenta-rut.html',
+    label: 'Ir a BancoEstado →',
+  },
+  {
+    keywords: ['fogape'],
+    href: 'https://www.fogape.cl/sitio/emprendedores/',
+    label: 'Ir a Fogape →',
+  },
+  {
+    keywords: ['corfo', 'subsidio corfo'],
+    href: 'https://www.corfo.cl/sites/cpp/emprendedores',
+    label: 'Ir a Corfo →',
+  },
+  {
+    keywords: ['coopeuch'],
+    href: 'https://www.coopeuch.cl/personas/creditos/credito-emprendedor.html',
+    label: 'Ir a Coopeuch →',
+  },
+  {
+    keywords: ['oriencoop'],
+    href: 'https://www.oriencoop.cl',
+    label: 'Ir a Oriencoop →',
+  },
+  {
+    keywords: ['registro de empresa', 'registro empresa', 'sociedad', 'empresa en un día'],
+    href: 'https://www.registrodeempresasysociedades.cl',
+    label: 'Registrar empresa →',
+  },
+  {
+    keywords: ['previred', 'cotizaciones', 'previsión', 'afp', 'isapre'],
+    href: 'https://www.previred.com',
+    label: 'Ir a Previred →',
+  },
+  {
+    keywords: ['municipio', 'patente', 'municipal'],
+    href: 'https://www.munitel.cl',
+    label: 'Municipio en línea →',
+  },
+  {
+    keywords: ['sence', 'capacitación', 'franquicia tributaria'],
+    href: 'https://www.sence.cl',
+    label: 'Ir a Sence →',
+  },
+]
+
+function resolveLink(accion, linkRecurso) {
+  const text = (accion ?? '').toLowerCase()
+
+  // Si el link del backend es específico (no solo dominio raíz), usarlo
+  if (linkRecurso) {
+    try {
+      const url = new URL(linkRecurso)
+      if (url.pathname.length > 1) {
+        // Buscar label descriptivo igual
+        for (const entry of LINK_MAP) {
+          if (entry.keywords.some(k => text.includes(k))) {
+            return { href: linkRecurso, label: entry.label }
+          }
+        }
+        return { href: linkRecurso, label: 'Ir al sitio →' }
+      }
+    } catch { /* URL inválida, seguir */ }
+  }
+
+  // Buscar en el mapa por keywords de la acción
+  for (const entry of LINK_MAP) {
+    if (entry.keywords.some(k => text.includes(k))) {
+      return { href: entry.href, label: entry.label }
+    }
+  }
+
+  // Fallback al link genérico del backend si existe
+  if (linkRecurso) return { href: linkRecurso, label: 'Ir al sitio →' }
+
+  return null
+}
+
+function StepIcon({ accion }) {
+  const d = (accion ?? '').toLowerCase()
+  if (d.includes('sii') || d.includes('formaliz') || d.includes('rut') || d.includes('actividades'))
+    return (
+      <svg width="36" height="36" viewBox="0 0 36 36">
+        <rect width="36" height="36" rx="9" fill="#EFF6FF" />
+        <text x="18" y="22" fill="#005A9C" fontSize="12" fontWeight="900" fontFamily="sans-serif" textAnchor="middle">Sii</text>
+        <line x1="10" y1="26" x2="26" y2="26" stroke="#005A9C" strokeWidth="2" />
+      </svg>
+    )
+  if (d.includes('cuenta') || d.includes('banco') || d.includes('corriente') || d.includes('bancoestado'))
+    return (
+      <svg width="36" height="36" viewBox="0 0 36 36">
+        <rect width="36" height="36" rx="9" fill="#F0FDF4" />
+        <rect x="7" y="11" width="22" height="14" rx="2" fill="#DCFCE7" stroke="#16A34A" strokeWidth="1.5" />
+        <line x1="7" y1="16" x2="29" y2="16" stroke="#16A34A" strokeWidth="1.5" />
+        <rect x="10" y="20" width="5" height="2.5" rx="1" fill="#4ADE80" />
+      </svg>
+    )
+  if (d.includes('boleta') || d.includes('factura') || d.includes('emisión'))
+    return (
+      <svg width="36" height="36" viewBox="0 0 36 36">
+        <rect width="36" height="36" rx="9" fill="#FFF7ED" />
+        <rect x="11" y="7" width="14" height="22" rx="2" fill="#FFEDD5" stroke="#EA580C" strokeWidth="1.5" />
+        <line x1="14" y1="13" x2="22" y2="13" stroke="#FED7AA" strokeWidth="1.5" />
+        <line x1="14" y1="17" x2="22" y2="17" stroke="#FED7AA" strokeWidth="1.5" />
+      </svg>
+    )
+  if (d.includes('fogape') || d.includes('crédito') || d.includes('credito'))
+    return (
+      <svg width="36" height="36" viewBox="0 0 36 36">
+        <rect width="36" height="36" rx="9" fill="#F0FDF4" />
+        <rect x="9" y="13" width="18" height="11" rx="2" fill="#DCFCE7" stroke="#16A34A" strokeWidth="1.5" />
+        <circle cx="18" cy="18.5" r="2.5" fill="#16A34A" />
+        <path d="M12 13 V 9 A 6 6 0 0 1 24 9 V 13" fill="none" stroke="#4ADE80" strokeWidth="2" />
+      </svg>
+    )
+  if (d.includes('corfo') || d.includes('subsidio') || d.includes('sence'))
+    return (
+      <svg width="36" height="36" viewBox="0 0 36 36">
+        <rect width="36" height="36" rx="9" fill="#ECFDF5" />
+        <text x="18" y="17" fill="#0F3D2E" fontSize="8" fontWeight="900" fontFamily="sans-serif" textAnchor="middle">CORFO</text>
+        <rect x="10" y="22" width="3.5" height="6" rx="1" fill="#A7F3D0" />
+        <rect x="16" y="18" width="3.5" height="10" rx="1" fill="#6EE7B7" />
+        <rect x="22" y="20" width="3.5" height="8" rx="1" fill="#34D399" />
+      </svg>
+    )
+  return (
+    <svg width="36" height="36" viewBox="0 0 36 36">
+      <rect width="36" height="36" rx="9" fill={C.bgCard} />
+      <circle cx="18" cy="18" r="7" fill="none" stroke={C.inkFaint} strokeWidth="2" />
+      <line x1="18" y1="14" x2="18" y2="18" stroke={C.inkFaint} strokeWidth="2" strokeLinecap="round" />
+      <circle cx="18" cy="21" r="1" fill={C.inkFaint} />
+    </svg>
+  )
+}
+
+// Urgencia por posición: los primeros pasos son más urgentes
+function urgenciaPorNumero(numero) {
+  if (numero <= 2) return { label: 'Urgente', bg: '#FEE2E2', color: '#DC2626' }
+  if (numero <= 4) return { label: 'Pronto',  bg: '#FEF3C7', color: '#D97706' }
+  return              { label: 'Luego',   bg: '#F3F4F6', color: '#6B7280' }
 }
 
 const containerVariants = {
@@ -28,8 +182,8 @@ const containerVariants = {
 }
 
 const itemVariants = {
-  hidden: { opacity: 0, y: 16 },
-  show: { opacity: 1, y: 0, transition: { duration: 0.38, ease: [0.22, 1, 0.36, 1] } },
+  hidden: { opacity: 0, x: -8 },
+  show: { opacity: 1, x: 0, transition: { duration: 0.4, ease: [0.22, 1, 0.36, 1] } },
 }
 
 export default function PlanAccion({ pasos }) {
@@ -42,38 +196,26 @@ export default function PlanAccion({ pasos }) {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(completados))
   }, [completados])
 
-  const toggle = (paso) =>
+  const toggle = (id) =>
     setCompletados(prev =>
-      prev.includes(paso) ? prev.filter(p => p !== paso) : [...prev, paso]
+      prev.includes(id) ? prev.filter(p => p !== id) : [...prev, id]
     )
 
-  const progreso = pasos.length > 0 ? completados.length / pasos.length : 0
+  const done = completados.length
+  const total = pasos.length
 
   return (
     <div>
-      {/* Header con barra de progreso */}
       <div style={{ marginBottom: 20 }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
-          <p style={{
-            fontSize: 10, fontWeight: 700, letterSpacing: '0.16em',
-            textTransform: 'uppercase', color: C.accent, margin: 0,
-          }}>
-            Tu plan de acción
-          </p>
-          <span style={{ fontSize: 12, fontWeight: 600, color: C.inkSoft }}>
-            {completados.length} / {pasos.length} completados
-          </span>
-        </div>
-        <div style={{ height: 5, background: C.lineSoft, borderRadius: 100, overflow: 'hidden' }}>
-          <motion.div
-            animate={{ width: `${progreso * 100}%` }}
-            transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-            style={{ height: '100%', background: C.accent, borderRadius: 100 }}
-          />
-        </div>
-        {completados.length === pasos.length && pasos.length > 0 && (
-          <p style={{ fontSize: 12, color: C.accent, fontWeight: 600, margin: '8px 0 0', textAlign: 'center' }}>
-            ¡Completaste todos los pasos! 🎉
+        <p style={{
+          fontSize: 10, fontWeight: 700, letterSpacing: '0.16em',
+          textTransform: 'uppercase', color: C.inkMid, margin: '0 0 6px',
+        }}>
+          Tu plan de acción
+        </p>
+        {done > 0 && (
+          <p style={{ fontSize: 12, color: C.inkSoft, margin: 0 }}>
+            {done} de {total} completados
           </p>
         )}
       </div>
@@ -81,100 +223,144 @@ export default function PlanAccion({ pasos }) {
       <motion.div
         variants={containerVariants}
         initial="hidden"
-        whileInView="show"
-        viewport={{ once: true, margin: '-40px' }}
-        style={{ display: 'flex', flexDirection: 'column', gap: 10 }}
+        animate="show"
+        style={{ display: 'flex', flexDirection: 'column', position: 'relative' }}
       >
-        {pasos.map((p) => {
-          const hecho = completados.includes(p.paso)
-          const urg = URGENCIA_CFG[p.urgencia] ?? URGENCIA_CFG.media
+        <div style={{
+          position: 'absolute', left: 15, top: 30, bottom: 20,
+          width: 1, background: C.line, zIndex: 0,
+        }} />
+
+        {pasos.map((p, index) => {
+          // Soporta ambos esquemas: {numero, accion} y {paso, descripcion}
+          const id     = p.numero   ?? p.paso
+          const accion = p.accion   ?? p.descripcion ?? ''
+          const plazo  = p.plazo    ?? null
+
+          const hecho  = completados.includes(id)
+          const urg    = urgenciaPorNumero(id)
+          const link   = resolveLink(accion, p.link_recurso)
+          const isLast = index === pasos.length - 1
 
           return (
             <motion.div
-              key={p.paso}
+              key={id}
               variants={itemVariants}
               style={{
-                background: hecho ? 'rgba(15,61,46,0.04)' : '#FFFFFF',
-                border: `1.5px solid ${hecho ? 'rgba(15,61,46,0.18)' : C.line}`,
-                borderRadius: 16,
-                padding: '16px 18px',
-                display: 'flex',
-                gap: 14,
-                alignItems: 'flex-start',
-                transition: 'all 0.25s ease',
+                display: 'flex', gap: 14,
+                marginBottom: isLast ? 0 : 20,
+                position: 'relative', zIndex: 1,
               }}
             >
-              {/* Número circular / check */}
+              {/* Número circular */}
               <button
-                onClick={() => toggle(p.paso)}
-                aria-label={hecho ? 'Marcar pendiente' : 'Marcar completado'}
+                onClick={() => toggle(id)}
+                title={hecho ? 'Marcar como pendiente' : 'Marcar como completado'}
                 style={{
-                  width: 38, height: 38, borderRadius: '50%',
+                  width: 30, height: 30, borderRadius: '50%', flexShrink: 0,
                   border: 'none',
-                  background: hecho ? C.accent : C.bgCard,
+                  background: hecho ? '#4ADE80' : C.accent,
+                  color: hecho ? C.accent : '#FFF',
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  cursor: 'pointer', flexShrink: 0,
-                  transition: 'all 0.22s',
-                  padding: 0,
+                  cursor: 'pointer',
+                  transition: 'transform 0.15s, background 0.2s',
+                  fontFamily: "'JetBrains Mono', monospace",
+                  fontSize: 12, fontWeight: 700,
                 }}
+                onMouseDown={e => e.currentTarget.style.transform = 'scale(0.88)'}
+                onMouseUp={e => e.currentTarget.style.transform = 'scale(1)'}
+                onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}
               >
                 {hecho ? (
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
-                    stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" strokeWidth="3" strokeLinecap="round">
                     <polyline points="20 6 9 17 4 12" />
                   </svg>
-                ) : (
-                  <span style={{
-                    fontFamily: "'JetBrains Mono', monospace",
-                    fontSize: 12, fontWeight: 700,
-                    color: C.inkMid, lineHeight: 1,
-                  }}>
-                    {String(p.paso).padStart(2, '0')}
-                  </span>
-                )}
+                ) : id}
               </button>
 
               {/* Contenido */}
-              <div style={{ flex: 1, minWidth: 0 }}>
-                <p style={{
-                  fontSize: 14, fontWeight: 600,
-                  color: hecho ? C.inkSoft : C.ink,
-                  margin: '0 0 8px', lineHeight: 1.45,
-                  textDecoration: hecho ? 'line-through' : 'none',
-                  transition: 'color 0.2s',
-                }}>
-                  {p.descripcion}
-                </p>
-
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
-                  <span style={{
-                    background: urg.bg, color: urg.color,
-                    fontSize: 10, fontWeight: 700,
-                    padding: '3px 9px', borderRadius: 100,
-                    textTransform: 'uppercase', letterSpacing: '0.07em',
-                  }}>
-                    {p.tiempo_estimado || urg.label}
-                  </span>
-                  {p.link_recurso && !hecho && (
-                    <a
-                      href={p.link_recurso}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      style={{
-                        fontSize: 12, fontWeight: 600,
-                        color: C.accent, textDecoration: 'none',
-                        display: 'flex', alignItems: 'center', gap: 4,
-                      }}
-                    >
-                      Ir al sitio →
-                    </a>
+              <div style={{
+                flex: 1,
+                background: hecho ? 'transparent' : C.bgCard,
+                border: `1px solid ${hecho ? 'transparent' : C.lineSoft}`,
+                borderRadius: 14,
+                padding: hecho ? '2px 0' : '14px 16px',
+                transition: 'all 0.3s',
+                opacity: hecho ? 0.55 : 1,
+              }}>
+                <div style={{ display: 'flex', gap: 12, alignItems: 'flex-start' }}>
+                  {!hecho && (
+                    <div style={{ flexShrink: 0, marginTop: 1 }}>
+                      <StepIcon accion={accion} />
+                    </div>
                   )}
+
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <p style={{
+                      margin: '0 0 8px',
+                      fontSize: 13.5, fontWeight: 600, color: C.ink,
+                      textDecoration: hecho ? 'line-through' : 'none',
+                      lineHeight: 1.45,
+                    }}>
+                      {accion}
+                    </p>
+
+                    {!hecho && (
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+                        <span style={{
+                          fontSize: 10, fontWeight: 700,
+                          letterSpacing: '0.06em', textTransform: 'uppercase',
+                          background: urg.bg, color: urg.color,
+                          borderRadius: 100, padding: '3px 9px',
+                        }}>
+                          {urg.label}
+                        </span>
+
+                        {plazo && (
+                          <span style={{ fontSize: 11, color: C.inkSoft, fontWeight: 500 }}>
+                            {plazo}
+                          </span>
+                        )}
+
+                        {link && (
+                          <a
+                            href={link.href}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            style={{
+                              fontSize: 11, fontWeight: 600,
+                              color: C.accent, textDecoration: 'none',
+                            }}
+                          >
+                            {link.label}
+                          </a>
+                        )}
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
             </motion.div>
           )
         })}
       </motion.div>
+
+      {done === total && total > 0 && (
+        <motion.div
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          style={{
+            marginTop: 20, padding: '14px 16px',
+            background: '#F0FDF4', borderRadius: 12,
+            border: '1px solid #BBF7D0',
+            fontSize: 13, fontWeight: 600, color: '#15803D',
+            textAlign: 'center',
+          }}
+        >
+          ¡Completaste todos los pasos! Tu negocio está en camino.
+        </motion.div>
+      )}
     </div>
   )
 }
