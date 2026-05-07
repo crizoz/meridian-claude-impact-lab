@@ -134,228 +134,205 @@ export default function Resultado() {
         </button>
       </div>
 
-      <div style={{ maxWidth: 560, margin: '0 auto', padding: '0 22px 80px' }}>
+      <div style={{ maxWidth: 1100, margin: '0 auto', padding: '0 20px 80px' }}>
+        <div className="resultado-grid" style={{ paddingTop: 28 }}>
+          {/* ── COLUMNA IZQUIERDA ── */}
+          <div>
+            {/* ── Hero: total de beneficios ── */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+              style={{
+                background: C.accent,
+                borderRadius: 24,
+                padding: '32px 28px',
+                marginBottom: 28,
+                textAlign: 'center',
+              }}
+            >
+              <p style={{
+                fontSize: 10, fontWeight: 700, color: 'rgba(255,255,255,0.55)',
+                textTransform: 'uppercase', letterSpacing: '0.18em', margin: '0 0 12px',
+              }}>
+                Beneficios disponibles para tu perfil
+              </p>
+              <div style={{
+                fontFamily: "'Inter Tight', system-ui, sans-serif",
+                fontSize: 'clamp(40px, 12vw, 60px)',
+                fontWeight: 800, color: '#FFFFFF',
+                lineHeight: 1, letterSpacing: '-0.03em',
+                marginBottom: 14,
+              }}>
+                $<ContadorAnimado valor={data.total_estimado} duracion_ms={2200} />
+              </div>
+              <p style={{
+                fontSize: 14, color: 'rgba(255,255,255,0.70)',
+                margin: '0 auto 24px', lineHeight: 1.5, maxWidth: 280,
+              }}>
+                Beneficios, créditos y multas evitadas disponibles para tu perfil.              </p>
 
-        {/* ── Hero: total de beneficios ── */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-          style={{
-            background: C.accent,
-            borderRadius: 24,
-            padding: '32px 28px',
-            margin: '24px 0',
-            textAlign: 'center',
-          }}
-        >
-          <p style={{
-            fontSize: 10, fontWeight: 700, color: 'rgba(255,255,255,0.55)',
-            textTransform: 'uppercase', letterSpacing: '0.18em', margin: '0 0 12px',
-          }}>
-            Beneficios disponibles para tu perfil
-          </p>
-          <div style={{
-            fontFamily: "'Inter Tight', system-ui, sans-serif",
-            fontSize: 'clamp(40px, 12vw, 60px)',
-            fontWeight: 800, color: '#FFFFFF',
-            lineHeight: 1, letterSpacing: '-0.03em',
-            marginBottom: 14,
-          }}>
-            $<ContadorAnimado valor={data.total_estimado} duracion_ms={2200} />
-          </div>
-          <p style={{
-            fontSize: 14, color: 'rgba(255,255,255,0.70)',
-            margin: '0 0 24px', lineHeight: 1.5, maxWidth: 280, marginLeft: 'auto', marginRight: 'auto',
-          }}>
-            Es lo que ganarías anualmente una vez que formalices tu actividad.
-          </p>
+              {/* Resumen rápido de categorías */}
+              <div style={{
+                display: 'flex', gap: 10, justifyContent: 'center', flexWrap: 'wrap',
+              }}>
+                {data.beneficios.length > 0 && (
+                  <div style={{
+                    background: 'rgba(255,255,255,0.12)', borderRadius: 100,
+                    padding: '6px 14px', fontSize: 12, fontWeight: 600, color: '#FFFFFF',
+                  }}>
+                    {data.beneficios.length} beneficios
+                  </div>
+                )}
+                {data.productos_cmf?.length > 0 && (
+                  <div style={{
+                    background: 'rgba(255,255,255,0.12)', borderRadius: 100,
+                    padding: '6px 14px', fontSize: 12, fontWeight: 600, color: '#FFFFFF',
+                  }}>
+                    {data.productos_cmf.length} productos financieros
+                  </div>
+                )}
+                {data.plan_accion?.length > 0 && (
+                  <div style={{
+                    background: 'rgba(255,255,255,0.12)', borderRadius: 100,
+                    padding: '6px 14px', fontSize: 12, fontWeight: 600, color: '#FFFFFF',
+                  }}>
+                    {data.plan_accion.length} pasos de acción
+                  </div>
+                )}
+              </div>
+            </motion.div>
+            {/* (CTA de WhatsApp arriba eliminado porque ahora está a la derecha) */}
 
-          {/* Resumen rápido de categorías */}
-          <div style={{
-            display: 'flex', gap: 10, justifyContent: 'center', flexWrap: 'wrap',
-          }}>
+            {/* ── Beneficios detectados ── */}
             {data.beneficios.length > 0 && (
-              <div style={{
-                background: 'rgba(255,255,255,0.12)', borderRadius: 100,
-                padding: '6px 14px', fontSize: 12, fontWeight: 600, color: '#FFFFFF',
-              }}>
-                {data.beneficios.length} beneficios
-              </div>
+              <motion.section
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: '-50px' }}
+                transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+                style={{ marginBottom: 36 }}
+              >
+                <SectionLabel texto={`${data.beneficios.length} beneficios para tu perfil`} />
+                <motion.div
+                  variants={staggerContainer}
+                  initial="hidden"
+                  whileInView="show"
+                  viewport={{ once: true, margin: '-40px' }}
+                  className="cards-grid"
+                >
+                  {data.beneficios.map((b, i) => (
+                    <BeneficioCard key={i} {...b} />
+                  ))}
+                </motion.div>
+              </motion.section>
             )}
+
+            {/* ── Créditos CMF ── */}
             {data.productos_cmf?.length > 0 && (
-              <div style={{
-                background: 'rgba(255,255,255,0.12)', borderRadius: 100,
-                padding: '6px 14px', fontSize: 12, fontWeight: 600, color: '#FFFFFF',
-              }}>
-                {data.productos_cmf.length} productos financieros
-              </div>
+              <motion.section
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: '-50px' }}
+                transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+                style={{ marginBottom: 36 }}
+              >
+                <SectionLabel texto="Créditos disponibles en el sistema financiero" />
+                <motion.div
+                  variants={staggerContainer}
+                  initial="hidden"
+                  whileInView="show"
+                  viewport={{ once: true, margin: '-40px' }}
+                  className="cards-grid"
+                >
+                  {data.productos_cmf.map((p, i) => (
+                    <ProductoCard key={i} {...p} />
+                  ))}
+                </motion.div>
+              </motion.section>
             )}
-            {data.plan_accion?.length > 0 && (
-              <div style={{
-                background: 'rgba(255,255,255,0.12)', borderRadius: 100,
-                padding: '6px 14px', fontSize: 12, fontWeight: 600, color: '#FFFFFF',
-              }}>
-                {data.plan_accion.length} pasos de acción
-              </div>
-            )}
+
+            {/* Footer móvil / izquierda */}
+            <p style={{
+              fontSize: 12, color: C.inkFaint,
+              marginTop: 36, lineHeight: 1.6,
+            }}>
+              Meridian no almacena datos personales sin tu consentimiento.<br />
+              Construido en Claude Impact Lab Chile 2026.
+            </p>
           </div>
-        </motion.div>
 
-        {/* ── CTA WhatsApp — visible arriba ── */}
-        <motion.button
-          initial={{ opacity: 0, y: 12 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2, duration: 0.5 }}
-          whileTap={{ scale: 0.98 }}
-          onClick={handleWhatsApp}
-          style={{
-            width: '100%',
-            background: '#25D366',
-            border: 'none',
-            borderRadius: 16,
-            padding: '16px 24px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            gap: 10,
-            color: '#fff',
-            fontFamily: "'Inter Tight', system-ui, sans-serif",
-            fontSize: 15, fontWeight: 700,
-            cursor: 'pointer',
-            marginBottom: 28,
-            letterSpacing: '0.02em',
-          }}
-        >
-          <IconWhatsApp />
-          Recibir asesoría por WhatsApp
-        </motion.button>
+          {/* ── COLUMNA DERECHA ── */}
+          <div className="resultado-col-right">
+            {/* ── Plan de acción ── */}
+            {data.plan_accion?.length > 0 && (
+              <motion.section
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: '-50px' }}
+                transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+                style={{ marginBottom: 32 }}
+              >
+                <PlanAccion pasos={data.plan_accion} />
+              </motion.section>
+            )}
 
-        {/* ── Beneficios detectados ── */}
-        {data.beneficios.length > 0 && (
-          <motion.section
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: '-50px' }}
-            transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-            style={{ marginBottom: 36 }}
-          >
-            <SectionLabel texto={`${data.beneficios.length} beneficios para tu perfil`} />
+            {/* ── CTAs finales ── */}
             <motion.div
-              variants={staggerContainer}
-              initial="hidden"
-              whileInView="show"
-              viewport={{ once: true, margin: '-40px' }}
+              initial={{ opacity: 0, y: 16 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.5 }}
               style={{ display: 'flex', flexDirection: 'column', gap: 10 }}
             >
-              {data.beneficios.map((b, i) => (
-                <BeneficioCard key={i} {...b} />
-              ))}
+              <button
+                onClick={handleWhatsApp}
+                style={{
+                  width: '100%',
+                  background: '#25D366', border: 'none',
+                  borderRadius: 100, padding: '16px 24px',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  gap: 10, color: '#fff',
+                  fontFamily: "'Inter Tight', system-ui, sans-serif",
+                  fontSize: 14, fontWeight: 700, cursor: 'pointer',
+                  letterSpacing: '0.02em',
+                  boxShadow: '0 4px 14px rgba(37, 211, 102, 0.25)',
+                }}
+              >
+                <IconWhatsApp />
+                Hablar con un asesor por WhatsApp
+              </button>
+
+              <button
+                onClick={() => window.print()}
+                style={{
+                  width: '100%',
+                  background: 'transparent',
+                  border: `1px solid ${C.ink}`,
+                  borderRadius: 100, padding: '14px 24px',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  gap: 8, color: C.ink,
+                  fontFamily: "'Inter Tight', system-ui, sans-serif",
+                  fontSize: 14, fontWeight: 600, cursor: 'pointer',
+                }}
+              >
+                Descargar reporte PDF ↓
+              </button>
+
+              <button
+                onClick={() => navigate('/')}
+                style={{
+                  background: 'transparent', border: 'none',
+                  color: C.inkSoft, cursor: 'pointer', padding: '12px 8px',
+                  fontFamily: "'Inter Tight', system-ui, sans-serif",
+                  fontSize: 13, fontWeight: 500,
+                }}
+              >
+                ← Calcular de nuevo con otro perfil
+              </button>
             </motion.div>
-          </motion.section>
-        )}
-
-        {/* ── Créditos CMF ── */}
-        {data.productos_cmf?.length > 0 && (
-          <motion.section
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: '-50px' }}
-            transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-            style={{ marginBottom: 36 }}
-          >
-            <SectionLabel texto="Créditos disponibles en el sistema financiero" />
-            <motion.div
-              variants={staggerContainer}
-              initial="hidden"
-              whileInView="show"
-              viewport={{ once: true, margin: '-40px' }}
-              style={{ display: 'flex', flexDirection: 'column', gap: 10 }}
-            >
-              {data.productos_cmf.map((p, i) => (
-                <ProductoCard key={i} {...p} />
-              ))}
-            </motion.div>
-          </motion.section>
-        )}
-
-        {/* ── Plan de acción ── */}
-        {data.plan_accion?.length > 0 && (
-          <motion.section
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: '-50px' }}
-            transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-            style={{ marginBottom: 36 }}
-          >
-            <PlanAccion pasos={data.plan_accion} />
-          </motion.section>
-        )}
-
-        {/* ── CTAs finales ── */}
-        <motion.div
-          initial={{ opacity: 0, y: 16 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.5 }}
-          style={{ display: 'flex', flexDirection: 'column', gap: 10 }}
-        >
-          <button
-            onClick={handleWhatsApp}
-            style={{
-              width: '100%',
-              background: '#25D366', border: 'none',
-              borderRadius: 16, padding: '16px 24px',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              gap: 10, color: '#fff',
-              fontFamily: "'Inter Tight', system-ui, sans-serif",
-              fontSize: 15, fontWeight: 700, cursor: 'pointer',
-              letterSpacing: '0.02em',
-            }}
-          >
-            <IconWhatsApp />
-            Hablar con un asesor por WhatsApp
-          </button>
-
-          <button
-            onClick={() => window.print()}
-            style={{
-              width: '100%',
-              background: 'transparent',
-              border: `1.5px solid ${C.line}`,
-              borderRadius: 16, padding: '14px 24px',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              gap: 8, color: C.inkMid,
-              fontFamily: "'Inter Tight', system-ui, sans-serif",
-              fontSize: 14, fontWeight: 600, cursor: 'pointer',
-            }}
-          >
-            Descargar reporte PDF ↓
-          </button>
-
-          <button
-            onClick={() => navigate('/')}
-            style={{
-              background: 'transparent', border: 'none',
-              color: C.inkFaint, cursor: 'pointer', padding: '8px',
-              fontFamily: "'Inter Tight', system-ui, sans-serif",
-              fontSize: 13, fontWeight: 500,
-            }}
-          >
-            ← Calcular de nuevo con otro perfil
-          </button>
-        </motion.div>
-
-        {/* Footer */}
-        <p style={{
-          fontSize: 12, color: C.inkFaint,
-          textAlign: 'center', marginTop: 36, lineHeight: 1.6,
-        }}>
-          Meridian no almacena datos personales sin tu consentimiento.
-          <br />
-          Construido en Claude Impact Lab Chile 2026.
-        </p>
-
+          </div>
+        </div>
       </div>
     </div>
   )

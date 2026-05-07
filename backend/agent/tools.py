@@ -36,6 +36,15 @@ def calcular_impuesto(rango_ingresos: str, tiene_rut: bool) -> dict:
     }
 
 
+_INGRESOS_POR_RANGO = {
+    'menos_500k': 350_000,
+    '500k_1M': 750_000,
+    '1M_2M': 1_500_000,
+    '2M_5M': 3_500_000,
+    'mas_5M': 7_000_000,
+}
+
+
 def calcular_credito_fogape(rango_ingresos: str, sector: str) -> dict:
     data = _load('fogape.json')
     uf = _load('sii_tablas.json')['uf_a_clp']
@@ -45,13 +54,25 @@ def calcular_credito_fogape(rango_ingresos: str, sector: str) -> dict:
         data['rangos_credito'][0],
     )
 
-    monto_max_uf = rango_data['monto_max_credito_uf']
+    monto_techo_fogape_pesos = rango_data['monto_max_credito_uf'] * uf
+    plazo = rango_data['plazo_max_meses']
+    cobertura = rango_data.get('cobertura_garantia_pct', 90)
+
+    ingreso_estimado = _INGRESOS_POR_RANGO.get(rango_ingresos, 750_000)
+    cuota_max = ingreso_estimado * 0.30
+    tasa_mensual = 0.012
+    factor = (1 - (1 + tasa_mensual) ** (-plazo)) / tasa_mensual
+    monto_viable = cuota_max * factor
+    monto_final = round(min(monto_techo_fogape_pesos, monto_viable) / 100_000) * 100_000
+
     return {
-        'monto_max_pesos': monto_max_uf * uf,
-        'monto_max_uf': monto_max_uf,
-        'tasa_referencial': f"{rango_data['tasa_garantia_anual_pct']}%",
-        'plazo_max_meses': rango_data['plazo_max_meses'],
-        'institucion_recomendada': data['instituciones_participantes'][0],
+        'monto_max_pesos': int(monto_final),
+        'monto_max_uf': round(monto_final / 38_000),
+        'monto_techo_fogape_pesos': int(monto_techo_fogape_pesos),
+        'cuota_mensual_estimada': round(cuota_max / 1_000) * 1_000,
+        'plazo_max_meses': plazo,
+        'cobertura_garantia_pct': cobertura,
+        'tasa_referencial': '14.4%',
     }
 
 
@@ -75,3 +96,17 @@ def obtener_productos_cmf(rango_ingresos: str, sector: str, region: str) -> list
         }
         for p in productos[:3]
     ]
+
+
+def test_montos():
+    rangos = ["menos_500k", "500k_1M", "1M_2M", "2M_5M", "mas_5M"]
+    for r in rangos:
+        res = calcular_credito_fogape(r, "comercio")
+        print(f"{r}:")
+        print(f"  viable:  ${res['monto_max_pesos']:,.0f}")
+        print(f"  techo:   ${res['monto_techo_fogape_pesos']:,.0f}")
+        print(f"  cuota:   ${res['cuota_mensual_estimada']:,.0f}")
+
+
+if __name__ == "__main__":
+    test_montos()
